@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="18dp"
+    android:background="#121212"> <!-- Темний фон -->
+
+    <!-- RecyclerView для списку ігор -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewGames"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/categoryButtonsLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:clipToPadding="false"/>
+
+    <!-- FloatingActionButton для додавання гри -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Додати гру"
+        android:src="@drawable/ic_add"
+        app:layout_constraintBottom_toTopOf="@id/categoryButtonsLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp"
+        app:backgroundTint="#58A870"
+    android:tint="@android:color/white"/>
+
+    <!-- Горизонтальний LinearLayout для кнопок категорій -->
+    <LinearLayout
+        android:id="@+id/categoryButtonsLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/buttonPlaying"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#58A870"
+            android:padding="12dp"
+            android:text="Playing"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/buttonPlanned"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#58A870"
+            android:padding="12dp"
+            android:text="Planned"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/buttonCompleted"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Completed"
+            android:backgroundTint="#58A870"
+            android:textColor="@android:color/white"
+            android:layout_margin="4dp"
+            android:padding="12dp"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
