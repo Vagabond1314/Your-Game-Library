@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    android:foreground="?attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Співвідношення сторін 2:3 -->
+        <ImageView
+            android:id="@+id/gameImage"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder"
+            app:layout_constraintDimensionRatio="2:3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Градієнт знизу для читабельності тексту -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:background="@drawable/gradient_bottom"
+            app:layout_constraintBottom_toBottomOf="@+id/gameImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Інфо-панель -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/gameImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/gameName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+    <!-- Контейнер для рейтингів, пріоритету та часу -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+    <!-- Рейтинг (Зірочка) -->
+    <TextView
+        android:id="@+id/gameRating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFD700"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone" />
+
+    <!-- Пріоритет (Суцільний синій кружечок для Planned) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/llPriority"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginEnd="8dp"
+        app:cardCornerRadius="11dp"
+        app:cardBackgroundColor="#2D5E85"
+        app:cardElevation="0dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvGamePriority"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- НОВИЙ БЕЙДЖ: Час проходження (Суцільна помаранчева капсула для Completed) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/llTimeSpent"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:minWidth="22dp"
+        app:cardCornerRadius="11dp"
+    app:cardBackgroundColor="#fc6f03"
+    app:cardElevation="0dp"
+    android:visibility="gone">
+
+    <TextView
+        android:id="@+id/tvGameTimeSpent"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="6dp"
+    android:textColor="#FFFFFF"
+    android:textSize="11sp"
+    android:textStyle="bold"
+    android:gravity="center" />
+</androidx.cardview.widget.CardView>
+    </LinearLayout>
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

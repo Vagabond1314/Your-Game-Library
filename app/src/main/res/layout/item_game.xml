@@ -4,58 +4,62 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    card_view:cardCornerRadius="16dp"
-    card_view:cardElevation="6dp"
-    android:background="@android:color/white">
+    android:layout_margin="12dp"
+    card_view:cardCornerRadius="20dp"
+    card_view:cardElevation="10dp"
+    android:foreground="?attr/selectableItemBackground">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:layout_height="220dp">
 
-        <!-- Назва гри -->
-        <TextView
-            android:id="@+id/gameName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"/>
-
-        <!-- Картинка гри горизонтальна -->
+        <!-- Картинка гри -->
         <ImageView
             android:id="@+id/gameImage"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:src="@drawable/placeholder"
-            android:contentDescription="Зображення гри"
-            android:background="@drawable/image_card_bg"/>
+            android:contentDescription="Game Image"
+            android:clipToOutline="true"
+            android:transitionName="gameImage"/>
 
-        <!-- Опис гри -->
-        <TextView
-            android:id="@+id/gameDescription"
+        <!-- Градієнт знизу для тексту -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/gradient_bottom"/>
+
+        <!-- Контейнер тексту -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:maxLines="5"
-            android:ellipsize="end"/>
+            android:orientation="vertical"
+            android:layout_gravity="bottom"
+            android:padding="12dp">
 
-        <!-- Рейтинг -->
-        <TextView
-            android:id="@+id/gameRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:visibility="gone"/>
-    </LinearLayout>
+            <!-- Назва гри -->
+            <TextView
+                android:id="@+id/gameName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <!-- Рейтинг -->
+            <TextView
+                android:id="@+id/gameRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFD700"
+                android:textSize="14sp"
+                android:layout_marginTop="2dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </FrameLayout>
 </androidx.cardview.widget.CardView>

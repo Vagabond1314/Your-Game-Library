@@ -1,83 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="20dp"
-    android:paddingBottom="16dp">
+    android:background="#121212"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="?attr/actionBarSize"
+        android:background="#121212"
+        app:titleTextColor="#FFFFFF" />
 
-        <!-- Назва гри -->
-        <EditText
-            android:id="@+id/editTextName"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Game name"/>
+            android:orientation="vertical"
+            android:padding="20dp">
 
-        <!-- Опис гри -->
-        <EditText
-            android:id="@+id/editTextDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Game`s description"
-            android:inputType="textMultiLine"
-            android:lines="4"
-            android:gravity="top"/>
+            <!-- ОСНОВНЕ -->
+            <TextView style="@style/AdminLabel" android:text="Game Name *" />
+            <EditText android:id="@+id/etName" style="@style/AdminInput" android:hint="Enter name" />
 
-        <!-- Категорія -->
-        <Spinner
-            android:id="@+id/spinnerCategory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
+            <TextView style="@style/AdminLabel" android:text="Status" />
+            <Spinner android:id="@+id/spCategory" style="@style/AdminInput" android:background="@drawable/search_bg" />
 
-        <!-- Рейтинг (тільки для "Пройдено") -->
-        <RatingBar
-            android:id="@+id/ratingBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:numStars="5"
-            android:stepSize="1"
-            android:visibility="gone"
-            android:layout_marginTop="8dp"
-            android:progressTint="#58A870"
-            android:secondaryProgressTint="#58A870"/>
+            <TextView android:id="@+id/tvRatingLabel" style="@style/AdminLabel" android:text="User Rating (0-10)" />
+            <EditText android:id="@+id/etRating" style="@style/AdminInput" android:hint="9.5" android:inputType="numberDecimal" />
 
+            <TextView style="@style/AdminLabel" android:text="Released Date (YYYY-MM-DD)" />
+            <EditText android:id="@+id/etReleased"
+                style="@style/AdminInput"
+                android:hint="2024-01-15"
+                android:inputType="number"
+                android:maxLength="10" />
 
-        <!-- Вибрана картинка -->
-        <ImageView
-            android:id="@+id/imageViewGame"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/placeholder"/>
+            <TextView style="@style/AdminLabel" android:text="Time to Beat (Hours)" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="3">
+                <EditText android:id="@+id/etHltbMain" style="@style/AdminInput" android:layout_width="0dp" android:layout_weight="1" android:hint="Main" android:inputType="number" android:layout_marginEnd="4dp" android:gravity="center" />
+                <EditText android:id="@+id/etHltbExtra" style="@style/AdminInput" android:layout_width="0dp" android:layout_weight="1" android:hint="Extra" android:inputType="number" android:layout_marginHorizontal="2dp" android:gravity="center" />
+                <EditText android:id="@+id/etHltb100" style="@style/AdminInput" android:layout_width="0dp" android:layout_weight="1" android:hint="100%" android:inputType="number" android:layout_marginStart="4dp" android:gravity="center" />
+            </LinearLayout>
 
-        <!-- Кнопка вибору картинки -->
-        <Button
-            android:id="@+id/buttonSelectImage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Select an image"
-            android:textColor="@android:color/white"
-            android:backgroundTint="#58A870"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"/>
+            <TextView style="@style/AdminLabel" android:text="Summary" />
+            <EditText android:id="@+id/etDescription" style="@style/AdminInput" android:hint="Short summary..." android:minLines="3" android:inputType="textMultiLine" />
 
-        <!-- Кнопка додати гру -->
-        <Button
-            android:id="@+id/buttonAddGame"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#58A870"
-            android:textColor="@android:color/white"
-            android:text="Add game"
-            android:layout_marginTop="16dp"/>
-    </LinearLayout>
-</ScrollView>
+            <TextView style="@style/AdminLabel" android:text="Storyline" />
+            <EditText android:id="@+id/etStoryline" style="@style/AdminInput" android:hint="Extended plot..." android:minLines="3" android:inputType="textMultiLine" />
+
+            <!-- СПИСКИ -->
+            <TextView style="@style/AdminLabel" android:text="Genres (comma separated)" />
+            <EditText android:id="@+id/etGenres" style="@style/AdminInput" android:hint="Action, RPG" />
+
+            <TextView style="@style/AdminLabel" android:text="Platforms (comma separated)" />
+            <EditText android:id="@+id/etPlatforms" style="@style/AdminInput" android:hint="PC, PS5" />
+
+            <TextView style="@style/AdminLabel" android:text="Tags (comma separated)" />
+            <EditText android:id="@+id/etTags" style="@style/AdminInput" android:hint="Open World" />
+
+            <TextView style="@style/AdminLabel" android:text="Languages (comma separated)" />
+            <EditText android:id="@+id/etLanguages" style="@style/AdminInput" android:hint="English, Ukrainian" />
+
+            <!-- МЕДІА -->
+            <TextView style="@style/AdminLabel" android:text="Cover Image" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="160dp"
+                android:layout_height="220dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp">
+                <ImageView
+                    android:id="@+id/imageViewGame"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/placeholder" />
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSelectImage"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Change Image"
+                android:textColor="#58A870" />
+            <LinearLayout
+                android:id="@+id/sectionScreenshots"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp">
+
+                <TextView style="@style/AdminLabel" android:text="Screenshots" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickScreenshots"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select Screenshots from Gallery"
+                    android:textColor="#58A870"
+                    app:strokeColor="#58A870"
+                    app:icon="@android:drawable/ic_menu_gallery"
+                    app:iconTint="#58A870" />
+
+                <TextView
+                    android:id="@+id/tvScreenshotsStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="No screenshots selected"
+                    android:textColor="#88FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAddGame"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="32dp"
+                android:text="SAVE GAME"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:backgroundTint="#58A870"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Фон (порожня частина) -->
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="4dp" />
+            <solid android:color="#2C2C2C" />
+        </shape>
+    </item>
+    <!-- Заповнена частина -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="4dp" />
+                <solid android:color="#2D5E85" /> <!-- Твій фірмовий синій -->
+            </shape>
+        </clip>
+    </item>
+</layer-list>

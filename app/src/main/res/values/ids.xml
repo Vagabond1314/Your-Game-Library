@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="btnSaveCompletedStats" type="id" />
+    <item name="etCompletionDate" type="id" />
+    <item name="etPlayCount" type="id" />
+    <item name="etTimeSpent" type="id" />
+    <item name="rbGameRating" type="id" />
+    <item name="tvUserPriority" type="id" />
+</resources>

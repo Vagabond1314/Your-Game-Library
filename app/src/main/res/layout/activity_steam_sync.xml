@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#121212"
+        app:title="Steam Sync"
+        app:titleTextColor="#FFFFFF" />
+
+    <!-- Початковий екран вводу -->
+    <LinearLayout
+        android:id="@+id/llInputContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal">
+
+        <ImageView android:layout_width="60dp" android:layout_height="60dp" android:src="@drawable/ic_steam" app:tint="#FFFFFF" android:layout_marginBottom="16dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxStrokeColor="#2D5E85"
+            app:hintTextColor="#2D5E85"
+            android:textColorHint="#888888">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSteamId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter SteamID64 (17 digits)"
+                android:inputType="number"
+                android:textColor="#FFFFFF" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btnFetchPreview"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#2D5E85"
+            android:text="FETCH LIBRARY"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Екран вибору ігор -->
+    <LinearLayout
+        android:id="@+id/llPreviewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+            <TextView android:id="@+id/tvPreviewGames" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnSelectAll" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Toggle All" style="@style/Widget.MaterialComponents.Button.TextButton" android:textColor="#2D5E85"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSteamGames"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingHorizontal="16dp"
+            android:clipToPadding="false"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="#1E1E1E"
+            android:elevation="8dp">
+
+            <Button
+                android:id="@+id/btnStartSync"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:backgroundTint="#58A870"
+                android:text="IMPORT SELECTED TO BACKGROUND"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

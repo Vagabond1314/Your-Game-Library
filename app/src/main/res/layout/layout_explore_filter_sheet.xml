@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center"
+                android:background="#33FFFFFF"
+                android:alpha="0.5"
+                android:layout_marginBottom="16dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Explore Filters"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/btnResetExplore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="Reset All"
+                    android:textColor="#FF4242"
+                    android:textStyle="bold"
+                    android:padding="8dp" />
+            </RelativeLayout>
+
+            <!-- КАТЕГОРІЇ (currentFilterIndex) -->
+            <TextView style="@style/AdminLabel" android:text="Discovery Mode" android:layout_marginTop="20dp" />
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgExploreMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTrending"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Trending"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="#44FFFFFF"
+                    app:checkedIconVisible="false" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPopular"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Popular"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="#44FFFFFF"
+                    app:checkedIconVisible="false" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTopRated"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Top Rated"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="#44FFFFFF"
+                    app:checkedIconVisible="false" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipNewReleases"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="New"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="#44FFFFFF"
+                    app:checkedIconVisible="false" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAnticipated"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Anticipated"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="#44FFFFFF"
+                    app:checkedIconVisible="false" />
+                  </com.google.android.material.chip.ChipGroup>
+
+            <!-- ПАРАМЕТРИ -->
+            <TextView style="@style/AdminLabel" android:text="Fine Tuning" android:layout_marginTop="24dp" />
+
+            <!-- Genres -->
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExploreGenres"
+                    style="@style/FilterButtonStyle"
+                    android:text="Genres &amp; Themes"
+                    app:iconTint="#58A870"
+                    app:icon="@android:drawable/ic_menu_agenda"/>
+                <TextView android:id="@+id/tvExSelectedGenres" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+            <!-- Platforms -->
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExplorePlatforms"
+                    style="@style/FilterButtonStyle"
+                    android:text="Platforms"
+                    app:iconTint="#2D5E85"
+                    app:icon="@android:drawable/ic_menu_set_as"/>
+                <TextView android:id="@+id/tvExSelectedPlatforms" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+            <!-- Languages -->
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExploreLanguages"
+                    style="@style/FilterButtonStyle"
+                    android:text="Languages"
+                    app:iconTint="#fc6f03"
+                    app:icon="@android:drawable/ic_menu_mylocation"/>
+                <TextView android:id="@+id/tvExSelectedLanguages" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+            <!-- Year -->
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExploreYear"
+                    style="@style/FilterButtonStyle"
+                    android:text="Release Year"
+                    app:iconTint="#9146FF"
+                    app:icon="@android:drawable/ic_menu_today"/>
+                <TextView android:id="@+id/tvExSelectedYear" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="20dp"
+        android:paddingTop="10dp"
+        android:background="#1E1E1E">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplyExplore"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Show Results"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:backgroundTint="#58A870"
+            app:cornerRadius="12dp" />
+    </FrameLayout>
+</LinearLayout>

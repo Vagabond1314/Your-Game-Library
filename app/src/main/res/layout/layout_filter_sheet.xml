@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical">
+
+    <!-- Верхня частина (Заголовок та прокрутка) -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Handle -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center"
+                android:background="#33FFFFFF"
+                android:alpha="0.5"
+                android:layout_marginBottom="12dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sort &amp; Filter"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/btnResetFilters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Reset"
+                    android:textColor="#FF4242"
+                    android:textStyle="bold"
+                    android:padding="8dp" />
+            </RelativeLayout>
+
+            <!-- СОРТУВАННЯ -->
+            <!-- СОРТУВАННЯ -->
+            <TextView style="@style/AdminLabel" android:text="Sort By" android:layout_marginTop="16dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgSortColumn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <!-- Базові сортування -->
+                <com.google.android.material.chip.Chip android:id="@+id/chipDefault" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Default" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipName" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Name" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipYear" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Year" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipRating" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rating" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
+
+                <!-- Нові сортування (PLANNED) -->
+                <com.google.android.material.chip.Chip android:id="@+id/chipPriority" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Priority" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#2D5E85"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipDateAdded" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date Added" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#2D5E85"/>
+
+                <!-- Нові сортування (PLAYING) -->
+                <com.google.android.material.chip.Chip android:id="@+id/chipDateStarted" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date Started" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#58A870"/>
+
+                <!-- Нові сортування (COMPLETED) -->
+                <com.google.android.material.chip.Chip android:id="@+id/chipTimeSpent" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Time Spent" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#fc6f03"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipDateFinished" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Finished Date" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#fc6f03"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipPlaythroughs" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Playthroughs" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#fc6f03"/>
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- ФІЛЬТРИ -->
+            <TextView style="@style/AdminLabel" android:text="Filters" android:layout_marginTop="16dp" />
+
+            <!-- Кожна секція стала компактнішою -->
+            <LinearLayout style="@style/FilterRowContainer" android:layout_marginTop="8dp">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterGenres"
+                    style="@style/FilterButtonStyle"
+                    android:text="Genres"
+                    app:iconTint="#58A870"/>
+                <TextView android:id="@+id/tvSelectedGenres" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterTags"
+                    style="@style/FilterButtonStyle"
+                    android:text="Tags &amp; Themes"
+                    app:iconTint="#9146FF"/>
+                <TextView android:id="@+id/tvSelectedTags" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterPlatforms"
+                    style="@style/FilterButtonStyle"
+                    android:text="Platforms"
+                    app:iconTint="#2D5E85"/>
+                <TextView android:id="@+id/tvSelectedPlatforms" style="@style/FilterSummaryText" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/FilterRowContainer">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterLanguages"
+                    style="@style/FilterButtonStyle"
+                    android:text="Languages"
+                    app:iconTint="#fc6f03"/>
+                <TextView android:id="@+id/tvSelectedLanguages" style="@style/FilterSummaryText" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ФІКСОВАНА КНОПКА (Завжди видима) -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="20dp"
+        android:paddingTop="10dp"
+        android:background="#1E1E1E"> <!-- Фон такий же як у листа, щоб не було розриву -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplyFilters"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Apply &amp; Refresh"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:backgroundTint="#58A870"
+            app:cornerRadius="12dp"
+            app:elevation="4dp" />
+    </FrameLayout>
+
+</LinearLayout>

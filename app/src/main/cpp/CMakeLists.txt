@@ -12,6 +12,18 @@ cmake_minimum_required(VERSION 3.22.1)
 # build script scope).
 project("gamestracker")
 
+add_library(
+        native-lib
+        SHARED
+        native-lib.cpp)
+
+find_library(
+        log-lib
+        log)
+
+target_link_libraries(
+        native-lib
+        ${log-lib})
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.

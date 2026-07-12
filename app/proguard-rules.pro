@@ -11,7 +11,11 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
-
+# Retrofit
+-keep class ** { *; }
+-keep interface ** { *; }
+-keep enum ** { *; }
+-dontwarn javax.lang.model.element.Modifier
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable

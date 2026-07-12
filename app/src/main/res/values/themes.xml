@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.GamesTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
@@ -6,4 +6,205 @@
     </style>
 
     <style name="Theme.GamesTracker" parent="Base.Theme.GamesTracker" />
+
+    <style name="MyDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <!-- Фон вікна -->
+        <item name="android:windowBackground">@drawable/dialog_bg_rounded</item>
+        <!-- Колір тексту заголовка -->
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <!-- Колір основного тексту (повідомлення) -->
+        <item name="android:textColorSecondary">#AAAAAA</item>
+        <!-- Колір кнопок -->
+        <item name="colorAccent">#58A870</item>
+        <!-- Стиль кнопок (опціонально) -->
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/DialogButtonStyle</item>
+    </style>
+
+    <style name="MyToolbarTheme" parent="ThemeOverlay.AppCompat.ActionBar">
+        <item name="colorControlNormal">#FFFFFF</item>
+        <!-- Додає легке світіння/тінь навколо іконок -->
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">4</item>
+    </style>
+
+    <style name="CustomPopupMenu" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:popupBackground">@drawable/bg_popup_menu</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+    <!-- 2. Тема для випадаючого меню (дизайн самого списку) -->
+    <style name="CustomMenuTheme" parent="Widget.AppCompat.ListPopupWindow">
+        <!-- Ваш фон із закругленими кутами та рамкою -->
+        <item name="android:popupBackground">@drawable/menu_dropdown_bg</item>
+        <!-- Білий колір тексту -->
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="DialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">#58A870</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!--    #A474E6-->
+
+    <style name="MenuRowStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <!-- Стиль для іконки (ТУТ БУЛА ПОМИЛКА) -->
+    <style name="MenuIconStyle">
+        <item name="android:layout_width">28dp</item>
+        <item name="android:layout_height">28dp</item>
+        <item name="android:layout_marginEnd">20dp</item>
+    </style>
+
+        <!-- Стиль для контейнера одного статистичного елемента -->
+        <style name="WidgetStatItem">
+            <item name="android:layout_width">0dp</item>
+            <item name="android:layout_height">wrap_content</item>
+            <item name="android:layout_weight">1</item>
+            <item name="android:orientation">vertical</item>
+            <item name="android:gravity">center</item>
+        </style>
+
+        <!-- Стиль для великого числа (значення) -->
+        <style name="WidgetStatValue">
+            <item name="android:layout_width">wrap_content</item>
+            <item name="android:layout_height">wrap_content</item>
+            <item name="android:textSize">20sp</item>
+            <item name="android:textStyle">bold</item>
+            <item name="android:includeFontPadding">false</item>
+        </style>
+
+        <!-- Стиль для підпису під числом -->
+        <style name="WidgetStatLabel">
+            <item name="android:layout_width">wrap_content</item>
+            <item name="android:layout_height">wrap_content</item>
+            <item name="android:textSize">10sp</item>
+            <item name="android:textColor">#88FFFFFF</item> <!-- Напівпрозорий білий -->
+            <item name="android:textAllCaps">true</item>
+            <item name="android:textStyle">bold</item>
+            <item name="android:includeFontPadding">false</item>
+            <item name="android:layout_marginTop">2dp</item>
+        </style>
+
+    <!-- Стиль для заголовка пункту -->
+    <style name="MenuTitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Стиль для підпису (опису) -->
+    <style name="MenuSubTitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#88FFFFFF</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- Стиль для самого BottomSheet, щоб прибрати стандартний білий фон -->
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyleItem</item>
+    </style>
+
+    <style name="BottomSheetStyleItem" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="AdminLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:textColor">#58A870</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="AdminInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:background">@drawable/search_bg</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorHint">#44FFFFFF</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="FilterRowContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="FilterButtonStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="strokeColor">#33FFFFFF</item>
+        <item name="android:paddingVertical">12dp</item>
+    </style>
+
+    <style name="FilterSummaryText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textColor">#88FFFFFF</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:text">All</item>
+    </style>
+
+    <style name="Theme.GamesTracker.AppWidgetContainerParent" parent="@android:style/Theme.DeviceDefault">
+        <!-- Radius of the outer bound of widgets to make the rounded corners -->
+        <item name="appWidgetRadius">16dp</item>
+        <!--
+        Radius of the inner view's bound of widgets to make the rounded corners.
+        It needs to be 8dp or less than the value of appWidgetRadius
+        -->
+        <item name="appWidgetInnerRadius">8dp</item>
+    </style>
+
+    <style name="Theme.GamesTracker.AppWidgetContainer" parent="Theme.GamesTracker.AppWidgetContainerParent">
+        <!-- Apply padding to avoid the content of the widget colliding with the rounded corners -->
+        <item name="appWidgetPadding">16dp</item>
+    </style>
+    <!-- Кастомна тема для DatePicker (Календаря) -->
+    <style name="CustomDatePickerTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <!-- Колір заголовка (року/дати зверху) і кружечка виділення -->
+        <item name="colorAccent">#58A870</item>
+
+        <!-- Колір кнопок OK та CANCEL -->
+        <item name="buttonBarPositiveButtonStyle">@style/DatePickerButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DatePickerButtonStyle</item>
+    </style>
+
+    <!-- Стиль для самих кнопок у календарі -->
+    <style name="DatePickerButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <!-- Колір тексту кнопок -->
+        <item name="android:textColor">#58A870</item>
+        <!-- Жирний шрифт -->
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

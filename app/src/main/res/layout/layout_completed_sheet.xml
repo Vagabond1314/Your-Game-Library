@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Обгортаємо все в ScrollView, щоб екран міг прокручуватися, якщо не вистачає місця -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#1E1E1E">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Game Completed!"
+            android:textColor="#fc6f03"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Оцінка гри -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Rating:"
+            android:textColor="#AAAAAA"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Горизонтальний список для оцінок -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="24dp"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:id="@+id/llRatingContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical" />
+        </HorizontalScrollView>
+
+        <!-- Час проходження -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:boxStrokeColor="#fc6f03"
+            app:hintTextColor="#fc6f03"
+            android:textColorHint="#888888">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTimeSpent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Time spent (hours)"
+                android:inputType="numberDecimal"
+                android:textColor="#FFFFFF" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Кількість проходжень -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:boxStrokeColor="#fc6f03"
+            app:hintTextColor="#fc6f03"
+            android:textColorHint="#888888">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPlayCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Playthrough count (e.g., 1)"
+                android:inputType="number"
+                android:text="1"
+                android:textColor="#FFFFFF" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Тип проходження (Спіннер) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Completion Type:"
+            android:textColor="#AAAAAA"
+            android:layout_marginBottom="4dp"/>
+        <Spinner
+            android:id="@+id/spinnerCompletionType"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:backgroundTint="#fc6f03"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Дати проходження (Початок і Кінець) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:boxStrokeColor="#fc6f03"
+                app:hintTextColor="#fc6f03"
+                android:textColorHint="#888888">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etStartDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="date"
+                    android:maxLength="10"
+                    android:hint="Start Date"
+                    android:textColor="#FFFFFF" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                app:boxStrokeColor="#fc6f03"
+                app:hintTextColor="#fc6f03"
+                android:textColorHint="#888888">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEndDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="date"
+                    android:maxLength="10"
+                    android:hint="End Date"
+                    android:textColor="#FFFFFF" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- REVIEW ПОЛЕ З ЛІЧИЛЬНИКОМ -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:boxStrokeColor="#fc6f03"
+            app:hintTextColor="#fc6f03"
+            android:textColorHint="#888888">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etReview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Review"
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:textColor="#FFFFFF" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btnSaveCompletedStats"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="SAVE TO COMPLETED"
+            android:textSize="16sp"
+            android:backgroundTint="#fc6f03"
+            android:textColor="#FFFFFF"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:fitsSystemWindows="true">
+
+    <!-- ШАПКА З ПОРТРЕТНИМ ПОСТЕРОМ -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:background="#121212"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsingToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:titleEnabled="false"
+            app:contentScrim="#000000"
+            app:statusBarScrim="#000000"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="#121212" />
+
+            <!-- ПОСТЕР -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="150dp"
+                android:layout_height="210dp"
+                android:layout_gravity="center"
+                app:cardBackgroundColor="#262626"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.6">
+
+                <ImageView
+                    android:id="@+id/detailsImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/placeholder" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- ТУЛБАР -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/transparent"
+                app:layout_collapseMode="pin"
+                app:navigationIconTint="#FFFFFF"
+                android:theme="@style/MyToolbarTheme"
+                app:popupTheme="@style/CustomMenuTheme"/>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ОСНОВНИЙ КОНТЕНТ -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:behavior_overlapTop="24dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
+
+            <!-- 1. ГОЛОВНА ІНФА (Текст і рейтинги) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/detailsTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Тип гри та Реліз -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/detailsGameCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#58A870"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:visibility="gone"/>
+
+                    <TextView
+                        android:id="@+id/detailsCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#58A870"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="  •  "
+                        android:textColor="#666666" />
+
+                    <TextView
+                        android:id="@+id/detailsReleased"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#AAAAAA"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- Красиві бейджі рейтингів -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/item_background"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:layout_marginEnd="8dp"
+                        android:gravity="center_vertical">
+                        <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@android:drawable/btn_star_big_on" app:tint="#FFC107"/>
+                        <TextView android:id="@+id/detailsRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:textColor="#FFF" android:textStyle="bold" android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/item_background"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center_vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CRITICS" android:textColor="#888" android:textSize="10sp" android:textStyle="bold" android:layout_marginEnd="6dp"/>
+                        <TextView android:id="@+id/detailsAggregatedRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#2D5E85" android:textStyle="bold" android:textSize="14sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Жанри -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/genresChipGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:chipSpacingHorizontal="6dp"
+                    app:chipSpacingVertical="4dp"
+                    app:singleLine="false" />
+            </LinearLayout>
+
+            <!-- 2. ПАНЕЛЬ ДІЙ КОРИСТУВАЧА (Бібліотека) - ПОКРАЩЕНИЙ UX -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:paddingHorizontal="16dp"
+                android:orientation="horizontal"
+                android:weightSum="3"
+                android:baselineAligned="false">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddPlaying"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Playing"
+                    android:textColor="#58A870"
+                    android:textSize="12sp"
+                    app:backgroundTint="#1A58A870"
+                    app:cornerRadius="12dp"
+                    app:iconGravity="textTop"
+                    app:iconTint="#58A870" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddPlanned"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Wishlist"
+                    android:textColor="#2D5E85"
+                    android:textSize="12sp"
+                    app:backgroundTint="#1A2D5E85"
+                    app:cornerRadius="12dp"
+                    app:iconGravity="textTop"
+                    app:iconTint="#2D5E85" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddCompleted"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="Beaten"
+                    android:textColor="#fc6f03"
+                    android:textSize="12sp"
+                    app:backgroundTint="#1Afc6f03"
+                    app:cornerRadius="12dp"
+                    app:iconGravity="textTop"
+                    app:iconTint="#fc6f03" />
+            </LinearLayout>
+
+            <!-- 2.1 МАГАЗИНИ (Винесені в окремий візуальний блок) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:paddingHorizontal="16dp"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:clipToPadding="false">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOpenSteam"
+                            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:iconPadding="0dp"
+                            app:iconGravity="textStart"
+                            app:backgroundTint="#171A21"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_steam"
+                            app:iconTint="#FFFFFF"
+                            android:visibility="gone" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnXbox"
+                            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:iconPadding="0dp"
+                            app:iconGravity="textStart"
+                            app:backgroundTint="#107C10"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_xbox"
+                            app:iconTint="#FFFFFF"
+                            android:visibility="gone" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPlayStation"
+                            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:iconPadding="0dp"
+                            app:iconGravity="textStart"
+                            app:backgroundTint="#003791"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_ps"
+                            app:iconTint="#FFFFFF"
+                            android:visibility="gone" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnNintendo"
+                            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:iconPadding="0dp"
+                            app:iconGravity="textStart"
+                            app:backgroundTint="#E60012"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_nintendo"
+                            app:iconTint="#FFFFFF"
+                            android:visibility="gone" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOpenIgdb"
+                            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:padding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:iconPadding="0dp"
+                            app:iconGravity="textStart"
+                            app:backgroundTint="#333333"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_igdb"
+                            app:iconTint="#FFFFFF" />                    </LinearLayout>
+                </HorizontalScrollView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:layout_marginTop="24dp">
+
+                <!-- 3. ОФІЦІЙНИЙ HLTB -->
+                <LinearLayout
+                    android:id="@+id/hltbContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/item_background"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="12dp"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <!-- Main -->
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MAIN STORY" android:textColor="#888" android:textSize="9sp" android:textStyle="bold" android:layout_marginBottom="4dp"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/image_25" app:tint="#58A870" />
+                            <TextView android:id="@+id/tvHltbMain" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="--h" android:textColor="#58A870" android:textSize="14sp" android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View android:layout_width="1dp" android:layout_height="30dp" android:background="#333" />
+
+                    <!-- Main + Extras -->
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MAIN + EXTRA" android:textColor="#888" android:textSize="9sp" android:textStyle="bold" android:layout_marginBottom="4dp"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/image_50" app:tint="#2D5E85" />
+                            <TextView android:id="@+id/tvHltbExtras" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="--h" android:textColor="#2D5E85" android:textSize="14sp" android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View android:layout_width="1dp" android:layout_height="30dp" android:background="#333" />
+
+                    <!-- Completionist -->
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="COMPLETIONIST" android:textColor="#888" android:textSize="9sp" android:textStyle="bold" android:layout_marginBottom="4dp"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/image_100" app:tint="#fc6f03" />
+                            <TextView android:id="@+id/tvHltbComplete" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="--h" android:textColor="#fc6f03" android:textSize="14sp" android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 4. SUMMARY & STORYLINE -->
+                <TextView android:id="@+id/summaryHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Summary" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="18sp" android:visibility="gone" />
+                <TextView android:id="@+id/detailsDescription" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#CCCCCC" android:textSize="14sp" android:lineSpacingExtra="4dp" android:visibility="gone" android:maxLines="4" android:ellipsize="end" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground"/>
+                <TextView android:id="@+id/tvSummaryClickHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Read more..." android:textColor="#58A870" android:textSize="12sp" android:textStyle="bold" android:visibility="gone" />
+
+                <TextView android:id="@+id/storylineHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Storyline" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="18sp" android:visibility="gone" />
+                <TextView android:id="@+id/detailsStoryline" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#CCCCCC" android:textSize="14sp" android:lineSpacingExtra="4dp" android:visibility="gone" android:maxLines="4" android:ellipsize="end" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground"/>
+                <TextView android:id="@+id/tvStorylineClickHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Read more..." android:textColor="#58A870" android:textSize="12sp" android:textStyle="bold" android:visibility="gone" />
+
+                <!-- 5. ГАЛЕРЕЯ -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Gallery" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="18sp" />
+                <androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="200dp" android:layout_marginTop="12dp" app:cardBackgroundColor="#1E1E1E" app:cardCornerRadius="16dp" app:cardElevation="0dp">
+                    <androidx.viewpager2.widget.ViewPager2 android:id="@+id/screenshotsViewPager" android:layout_width="match_parent" android:layout_height="match_parent" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- 6. ТЕХНІЧНА ІНФОРМАЦІЯ -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Platforms" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="14sp" />
+                <com.google.android.material.chip.ChipGroup android:id="@+id/platformsChipGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Languages" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="14sp" />
+                <com.google.android.material.chip.ChipGroup android:id="@+id/languagesChipGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Tags" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="14sp" />
+                <com.google.android.material.chip.ChipGroup android:id="@+id/tagsChipGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+
+                <!-- 7. ПОВ'ЯЗАНЕ (Series / Similar) -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:orientation="vertical">
+                    <LinearLayout android:id="@+id/btnSeries" android:visibility="gone" android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginBottom="8dp" android:background="@drawable/bg_details_button" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:clickable="true" android:focusable="true">
+                        <TextView android:id="@+id/tvSeriesTitle" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@android:drawable/ic_media_play" app:tint="#888" />
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/btnSimilarGames" android:layout_width="match_parent" android:layout_height="54dp" android:background="@drawable/bg_details_button" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:visibility="gone" android:clickable="true" android:focusable="true">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="Similar Games" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="14sp" />
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@android:drawable/ic_media_play" app:tint="#888" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

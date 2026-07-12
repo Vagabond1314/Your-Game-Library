@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#1E1E1E">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Game wishlisted!"
+        android:textColor="#2D5E85"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Оцінка гри -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Priority:"
+        android:textColor="#AAAAAA"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Горизонтальний список для оцінок -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginBottom="24dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:id="@+id/PriorityContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical" />
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/btnSavePlannedGames"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="SAVE TO WISHLISTED"
+        android:textSize="16sp"
+        android:backgroundTint="#2D5E85"
+        android:textColor="#FFFFFF"/>
+
+</LinearLayout>

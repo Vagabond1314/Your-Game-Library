@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical"
+    android:paddingBottom="24dp">
+
+    <!-- Смужка зверху (Handle) -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="12dp"
+        android:background="#33FFFFFF"
+        android:alpha="0.5" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="Menu"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <!-- Пункт: Add Game -->
+    <LinearLayout
+        android:id="@+id/menuAddGame"
+        style="@style/MenuRowStyle">
+        <ImageView
+            style="@style/MenuIconStyle"
+            android:src="@drawable/plus"
+            app:tint="#fc6f03" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView style="@style/MenuTitleStyle" android:text="Add New Game" />
+            <TextView style="@style/MenuSubTitleStyle" android:text="Add a game manually to your collection" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Пункт: Explore -->
+    <LinearLayout
+        android:id="@+id/menuExplore"
+        style="@style/MenuRowStyle">
+        <ImageView
+            style="@style/MenuIconStyle"
+            android:src="@drawable/ic_browser"
+            app:tint="#58A870" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView style="@style/MenuTitleStyle" android:text="Explore" />
+            <TextView style="@style/MenuSubTitleStyle" android:text="Search for games in the global database" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- НОВИЙ ПУНКТ Пункт: Collections -->
+    <LinearLayout
+        android:id="@+id/menuCollections"
+        style="@style/MenuRowStyle">
+        <ImageView
+            style="@style/MenuIconStyle"
+            android:src="@drawable/ic_collections"
+            app:tint="#9146FF" /> <!-- Фіолетовий колір для колекцій -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView style="@style/MenuTitleStyle" android:text="Collections" />
+            <TextView style="@style/MenuSubTitleStyle" android:text="Organize your games into custom lists" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Пункт: Random Picker (Колесо фортуни) -->
+    <LinearLayout
+        android:id="@+id/menuRandom"
+        style="@style/MenuRowStyle">
+        <ImageView
+            style="@style/MenuIconStyle"
+            app:tint="#FFC107"
+            android:src="@drawable/wheel"/> <!-- Золотий/Жовтий колір --> <!--android:src="@drawable/ic_refresh"  Або додай свою іконку колеса/кубиків -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView style="@style/MenuTitleStyle" android:text="Wheel of Fortune" />
+            <TextView style="@style/MenuSubTitleStyle" android:text="Let fate decide what to play next" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/menuStats"
+        style="@style/MenuRowStyle">
+        <ImageView
+            style="@style/MenuIconStyle"
+            android:src="@drawable/ic_igdb"
+            app:tint="#00BFFF" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView style="@style/MenuTitleStyle" android:text="Statistics" />
+            <TextView style="@style/MenuSubTitleStyle" android:text="View your gaming insights" />
+        </LinearLayout>
+    </LinearLayout>
+    <!-- Пункт: Settings -->
+    <LinearLayout
+        android:id="@+id/menuSettings"
+        style="@style/MenuRowStyle">
+        <ImageView
+            style="@style/MenuIconStyle"
+            android:src="@drawable/ic_settings"
+            app:tint="#2D5E85" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView style="@style/MenuTitleStyle" android:text="Settings" />
+            <TextView style="@style/MenuSubTitleStyle" android:text="App configuration and preferences" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
