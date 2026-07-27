@@ -1,6 +1,5 @@
 *.iml
 .gradle
-app/src/main/cpp/native-lib.cpp
 /local.properties
 /.idea/caches
 /.idea/libraries
