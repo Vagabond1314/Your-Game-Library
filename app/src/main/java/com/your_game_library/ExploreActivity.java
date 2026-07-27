@@ -6,12 +6,14 @@ import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +40,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class ExploreActivity extends AppCompatActivity {
 
+    private static final String TAG = "IGDB_DEBUG";
+
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView tvFilter;
@@ -45,6 +49,7 @@ public class ExploreActivity extends AppCompatActivity {
 
     private IgdbAdapter adapter;
     private IgdbApiService igdbApi;
+    private TwitchAuthApiService twitchAuthApi; // Separate Retrofit for Twitch Token!
     private String accessToken = null;
 
     private List<IgdbGame> games = new ArrayList<>();
@@ -57,25 +62,22 @@ public class ExploreActivity extends AppCompatActivity {
     private int currentFilterIndex = 0;
 
     private MaterialButton btnToggleLayout;
-    private boolean isGridView = false; // Початковий стан — список
+    private boolean isGridView = false;
 
-    // Списки для мульти-вибору
     private List<Integer> selectedGenreIds = new ArrayList<>();
     private List<Integer> selectedThemeIds = new ArrayList<>();
     private List<Integer> selectedPlatformIds = new ArrayList<>();
     private List<Integer> selectedLanguageIds = new ArrayList<>();
     private int selectedYear = -1;
-    LinearLayoutManager layoutManager;
-    private final String CLIENT_ID = Config.IGDB_CLIENT_ID;
-    private final String CLIENT_SECRET = Config.IGDB_CLIENT_SECRET;
+
     private static final String PREF_NAME = "explore_prefs";
     private static final String KEY_IS_GRID = "is_grid_view";
 
-    // --- ДОДАНІ ЗМІННІ ДЛЯ ЗБЕРЕЖЕННЯ ТЕКСТОВИХ НАЗВ ---
     private List<String> selectedGenreNames = new ArrayList<>();
     private List<String> selectedThemeNames = new ArrayList<>();
     private List<String> selectedPlatformNames = new ArrayList<>();
     private List<String> selectedLanguageNames = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -351,7 +353,7 @@ public class ExploreActivity extends AppCompatActivity {
     }
     private void showLanguageDialog(ExploreFilterBottomSheet sheet) {
         progressBar.setVisibility(View.VISIBLE);
-        igdbApi.getLanguages(CLIENT_ID, accessToken, "fields name; limit 50; sort name asc;").enqueue(new Callback<List<IgdbNameModel>>() {
+        igdbApi.getLanguages(getClientId(), accessToken, "fields name; limit 50; sort name asc;").enqueue(new Callback<List<IgdbNameModel>>() {
             @Override
             public void onResponse(Call<List<IgdbNameModel>> call, Response<List<IgdbNameModel>> response) {
                 progressBar.setVisibility(View.GONE);
@@ -475,7 +477,7 @@ public class ExploreActivity extends AppCompatActivity {
         // Сучасні платформи: PC, PS4, PS5, Xbox One, Xbox Series, Switch
         String query = "fields name; where id = (6, 48, 49, 130, 167, 169); sort name asc;";
 
-        igdbApi.getPlatforms(CLIENT_ID, accessToken, query).enqueue(new Callback<List<IgdbNameModel>>() {
+        igdbApi.getPlatforms(getClientId(), accessToken, query).enqueue(new Callback<List<IgdbNameModel>>() {
             @Override
             public void onResponse(Call<List<IgdbNameModel>> call, Response<List<IgdbNameModel>> response) {
                 progressBar.setVisibility(View.GONE);
@@ -526,13 +528,13 @@ public class ExploreActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         String query = "fields name; limit 50; sort name asc;";
 
-        igdbApi.getGenres(CLIENT_ID, accessToken, query).enqueue(new Callback<List<IgdbNameModel>>() {
+        igdbApi.getGenres(getClientId(), accessToken, query).enqueue(new Callback<List<IgdbNameModel>>() {
             @Override
             public void onResponse(Call<List<IgdbNameModel>> call, Response<List<IgdbNameModel>> response) {
                 if (response.body() == null) return;
                 List<IgdbNameModel> allOptions = new ArrayList<>(response.body());
 
-                igdbApi.getThemes(CLIENT_ID, accessToken, query).enqueue(new Callback<List<IgdbNameModel>>() {
+                igdbApi.getThemes(getClientId(), accessToken, query).enqueue(new Callback<List<IgdbNameModel>>() {
                     @Override
                     public void onResponse(Call<List<IgdbNameModel>> call, Response<List<IgdbNameModel>> resT) {
                         progressBar.setVisibility(View.GONE);
@@ -633,42 +635,94 @@ public class ExploreActivity extends AppCompatActivity {
     }
 
     private void initRetrofit() {
-        Retrofit retrofit = new Retrofit.Builder()
+        // 1. IGDB API Base URL (Use "https://api.igdb.com/")
+        Retrofit igdbRetrofit = new Retrofit.Builder()
                 .baseUrl("https://api.igdb.com/")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        igdbApi = retrofit.create(IgdbApiService.class);
+        igdbApi = igdbRetrofit.create(IgdbApiService.class);
+
+        // 2. Twitch Auth API Base URL
+        Retrofit twitchRetrofit = new Retrofit.Builder()
+                .baseUrl("https://id.twitch.tv/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        twitchAuthApi = twitchRetrofit.create(TwitchAuthApiService.class);
     }
 
+    private String getClientSecret() {
+        return Config.getIgdbClientSecret();
+    }
     private void fetchTokenAndLoadInitialGames() {
-        igdbApi.getToken(CLIENT_ID, CLIENT_SECRET, "client_credentials").enqueue(new Callback<TokenResponse>() {
+        progressBar.setVisibility(View.VISIBLE);
+
+        String clientId = getClientId().trim();
+        String clientSecret = getClientSecret().trim();
+
+        Log.d(TAG, "Client ID: " + clientId);
+        Log.d(TAG, "DEBUG Client ID: [" + clientId + "]");
+        Log.d(TAG, "DEBUG Client Secret length: " + clientSecret.length());
+        twitchAuthApi.getToken(clientId, clientSecret, "client_credentials").enqueue(new Callback<TokenResponse>() {
             @Override
             public void onResponse(Call<TokenResponse> call, Response<TokenResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     accessToken = "Bearer " + response.body().access_token;
+                    Log.d(TAG, "Twitch Token obtained successfully!");
                     fetchGames(false);
+                } else {
+                    progressBar.setVisibility(View.GONE);
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "empty";
+                        Log.e(TAG, "Failed to get Twitch Token. HTTP " + response.code() + " Error: " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "HTTP Code: " + response.code());
+                    }
                 }
             }
-            @Override public void onFailure(Call<TokenResponse> call, Throwable t) { }
+
+            @Override
+            public void onFailure(Call<TokenResponse> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                Log.e(TAG, "Twitch Token Network Failure: ", t);
+            }
         });
     }
 
     private void fetchGames(boolean isNextPage) {
         if (accessToken == null || isLoading) return;
-        isLoading = true; progressBar.setVisibility(View.VISIBLE);
-        if (!isNextPage) { currentOffset = 0; games.clear(); adapter.notifyDataSetChanged(); }
+        isLoading = true;
+        progressBar.setVisibility(View.VISIBLE);
 
-        igdbApi.getGames(CLIENT_ID, accessToken, buildIgdbQuery()).enqueue(new Callback<List<IgdbGame>>() {
+        if (!isNextPage) {
+            currentOffset = 0;
+            games.clear();
+            adapter.notifyDataSetChanged();
+        }
+
+        String clientId = Config.getIgdbClientId();
+
+        igdbApi.getGames(clientId, accessToken, buildIgdbQuery()).enqueue(new Callback<List<IgdbGame>>() {
             @Override
             public void onResponse(Call<List<IgdbGame>> call, Response<List<IgdbGame>> response) {
-                progressBar.setVisibility(View.GONE); isLoading = false;
+                progressBar.setVisibility(View.GONE);
+                isLoading = false;
+
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "Fetched games count: " + response.body().size());
                     games.addAll(response.body());
                     adapter.notifyDataSetChanged();
+                } else {
+                    Log.e(TAG, "IGDB Games API Error: HTTP " + response.code());
                 }
             }
-            @Override public void onFailure(Call<List<IgdbGame>> call, Throwable t) { progressBar.setVisibility(View.GONE); isLoading = false; }
+
+            @Override
+            public void onFailure(Call<List<IgdbGame>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                isLoading = false;
+                Log.e(TAG, "IGDB Games Network Failure: ", t);
+            }
         });
     }
 
@@ -682,5 +736,9 @@ public class ExploreActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private String getClientId() {
+        return Config.getIgdbClientId(); // Or Config.INSTANCE.getIgdbClientId() if Config is Kotlin
     }
 }

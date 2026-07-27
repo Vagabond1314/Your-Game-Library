@@ -1,5 +1,7 @@
 package com.your_game_library;
 
+import androidx.annotation.Keep;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -7,7 +9,7 @@ import retrofit2.http.Body;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
-
+@Keep
 public interface IgdbApiService {
     // 1. Отримання токена
     @POST("https://id.twitch.tv/oauth2/token")

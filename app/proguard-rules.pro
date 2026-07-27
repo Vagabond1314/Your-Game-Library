@@ -16,6 +16,14 @@
 -keep interface ** { *; }
 -keep enum ** { *; }
 -dontwarn javax.lang.model.element.Modifier
+# Preserve all native method names for JNI
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
+
+# Keep the Config class intact
+-keep class com.your_game_library.Config { *; }
+-keepclassmembers class com.your_game_library.Config { *; }
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable

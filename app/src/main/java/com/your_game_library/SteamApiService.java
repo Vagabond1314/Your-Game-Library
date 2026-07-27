@@ -1,9 +1,12 @@
 package com.your_game_library;
 
+import androidx.annotation.Keep;
+
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
+@Keep
 public interface SteamApiService {
     // Отримання списку куплених ігор
     @GET("IPlayerService/GetOwnedGames/v0001/")
