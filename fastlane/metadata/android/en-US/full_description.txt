@@ -1,0 +1,10 @@
+  Your Game Library is your ultimate companion for organizing, tracking, and reflecting on your video game collection. Powered by the IGDB database, effortlessly build your personal gaming backlog and keep track of every title you play.
+
+  Key Features:
+
+  • Backlog Management: Effortlessly organize your games across three primary statuses: Playing, Planned, and Beaten.
+  • Reviews & Tracking: Log your play time, add personal ratings, and write detailed reviews for games you've completed.
+  • Comprehensive Database: Search and import thousands of titles using the IGDB API, or add custom games manually.
+  • Custom Lists: Create custom game lists tailored to your taste, complete with custom cover images and primary theme colors.
+  • Random Game Spinner: Can't decide what to play next? Spin the wheel to pick a random game from your collection.
+  • In-Depth Statistics: Visualize your gaming habits with detailed stats on total hours spent, total games finished, your most-played genres, and earned achievements.
