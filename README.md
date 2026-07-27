@@ -39,8 +39,8 @@ To build this app locally using Android Studio or the command line:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/yourapp.git
-   cd yourapp
+   git clone https://github.com/Vagabond1314/Your-Game-Library.git
+   cd Your-Game-Library
 
 2.  Build the APK:
 
