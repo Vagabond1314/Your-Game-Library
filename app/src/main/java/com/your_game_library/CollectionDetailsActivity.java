@@ -1,4 +1,3 @@
-
 package com.your_game_library;
 
 import android.content.SharedPreferences;
@@ -10,6 +9,7 @@ import android.transition.Fade;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -50,7 +50,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     private ConstraintLayout topBarLayout;
 
     private static final String PREF_NAME = "app_settings";
-    private static final String KEY_SORT_COLUMN = "sort_column_col"; // Окремий ключ для колекцій
+    private static final String KEY_SORT_COLUMN = "sort_column_col";
     private static final String KEY_IS_ASCENDING = "is_ascending_col";
 
     Map<String, List<Game>> cachedLists = new HashMap<>();
@@ -59,7 +59,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     private boolean isAscending = false;
     int accentColor;
 
-    // Фільтри (якщо захочеш додати пізніше)
     private String selectedGenreFilter = "", selectedTagFilter = "", selectedPlatformFilter = "", selectedLanguageFilter = "";
     private List<String> selectedGenresList = new ArrayList<>(), selectedTagsList = new ArrayList<>(), selectedPlatformsList = new ArrayList<>(), selectedLanguagesList = new ArrayList<>();
 
@@ -74,27 +73,51 @@ public class CollectionDetailsActivity extends AppCompatActivity {
 
         dbHelper = GameDatabaseHelper.getInstance(this);
 
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarCollection);
-        setSupportActionBar(toolbar);
-
-        toolbar.setNavigationOnClickListener(v -> finish());
         initSettings();
         initViews();
         setupGlowEffect();
         setupFilterButton();
         setupSearchLogic();
 
-        // Завантажуємо дані з відновленням скролу (false для першого разу)
         loadCategorySorted(collectionId, false);
 
         findViewById(R.id.fabAddGameToCol).setOnClickListener(v -> showAddGamesDialog());
     }
+
+    private void initViews() {
+        recyclerView = findViewById(R.id.rvCollectionGames);
+        tvEmpty = findViewById(R.id.tvEmptyCollection);
+        searchView = findViewById(R.id.searchView);
+        topBarLayout = findViewById(R.id.topBarConstraintLayout);
+        Toolbar toolbar = findViewById(R.id.toolbarCollection);
+
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(collectionName);
+        }
+
+        // Ensure back click works via listener
+        toolbar.setNavigationOnClickListener(v -> finish());
+
+        updateLayoutManager();
+    }
+
+    // Handle home/back button press via ActionBar menu options
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void setupFilterButton() {
         View btnFilters = findViewById(R.id.btnFilters);
         TextView tvSortLabel = findViewById(R.id.tvCurrentSort);
         ImageView ivTune = findViewById(R.id.ivTune);
 
-        // Фарбуємо іконку фільтра в колір колекції
         ivTune.setImageTintList(ColorStateList.valueOf(accentColor));
 
         btnFilters.setOnClickListener(v -> {
@@ -121,7 +144,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                             applyAndLoad();
                         }
 
-                        // Передаємо 'sheet', щоб мітки оновлювалися миттєво
                         @Override public void onOpenGenreDialog(com.your_game_library.FilterBottomSheet sheet) { showGenreFilterDialog(sheet); }
                         @Override public void onOpenTagDialog(com.your_game_library.FilterBottomSheet sheet) { showTagFilterDialog(sheet); }
                         @Override public void onOpenPlatformDialog(com.your_game_library.FilterBottomSheet sheet) { showPlatformFilterDialog(sheet); }
@@ -131,6 +153,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             sheet.show(getSupportFragmentManager(), "filter_sheet");
         });
     }
+
     private void showGenreFilterDialog(com.your_game_library.FilterBottomSheet sheet) {
         List<String> allGenres = dbHelper.getAllUniqueGenres();
         String[] genresArray = allGenres.toArray(new String[0]);
@@ -149,7 +172,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                         if (checkedItems[i]) selectedGenresList.add(genresArray[i]);
                     }
                     selectedGenreFilter = selectedGenresList.isEmpty() ? "" : String.join("|", selectedGenresList);
-                    if (sheet != null) sheet.updateSummaryLabels(); // Оновлюємо текст у меню
+                    if (sheet != null) sheet.updateSummaryLabels();
                 })
                 .setNeutralButton("Clear All", null)
                 .setNegativeButton("Cancel", null)
@@ -285,6 +308,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             if (sheet != null) sheet.updateSummaryLabels();
         });
     }
+
     private void initSettings() {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         currentSortColumn = prefs.getString(KEY_SORT_COLUMN, "id");
@@ -292,36 +316,13 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         updateSortCriteria();
     }
 
-    private void initViews() {
-        recyclerView = findViewById(R.id.rvCollectionGames);
-        tvEmpty = findViewById(R.id.tvEmptyCollection);
-        searchView = findViewById(R.id.searchView);
-        topBarLayout = findViewById(R.id.topBarConstraintLayout);
-        Toolbar toolbar = findViewById(R.id.toolbarCollection);
-
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(collectionName);
-        }
-
-        updateLayoutManager();
-    }
-
     private void setupGlowEffect() {
-        // 1. Фарбуємо заголовок Toolbar
-
-        // 2. Фарбуємо рамку картки пошуку (потрібен MaterialCardView)
         androidx.cardview.widget.CardView card = findViewById(R.id.topBarCard);
-        // Якщо змінити CardView на MaterialCardView в XML:
-        // ((com.google.android.material.card.MaterialCardView) card).setStrokeColor(ColorStateList.valueOf(accentColor));
-        // ((com.google.android.material.card.MaterialCardView) card).setStrokeWidth(3);
 
-        // 3. Фарбуємо лінію-розділювач (робимо її товщою)
         View divider = findViewById(R.id.colorDivider);
         divider.setBackgroundColor(accentColor);
         ViewGroup.LayoutParams params = divider.getLayoutParams();
-        params.height = 16; // Робимо лінію чіткішою
+        params.height = 16;
         divider.setLayoutParams(params);
 
         FloatingActionButton fab = findViewById(R.id.fabAddGameToCol);
@@ -333,7 +334,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         boolean isGrid = prefs.getBoolean("is_main_grid", false);
         recyclerView.setLayoutManager(isGrid ? new GridLayoutManager(this, 2) : new LinearLayoutManager(this));
 
-        // Якщо адаптер вже є, оновлюємо йому режим відображення
         if (adapter != null) {
             adapter.setGrid(isGrid);
         }
@@ -342,13 +342,11 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // ВАЖЛИВО: Оновлюємо LayoutManager та режим адаптера при поверненні з налаштувань
         updateLayoutManager();
         loadCategorySorted(collectionId, true);
     }
 
     private void handleSortSelection(String option) {
-        // Скидання фільтрів для стандартних типів
         if (!option.equals("Genre") && !option.equals("Tag") && !option.equals("Platform") && !option.equals("Language")) {
             clearFilters();
         }
@@ -387,13 +385,15 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             default: return "Default";
         }
     }
+
     TransitionSet createTransition() {
         return new TransitionSet()
-                .addTransition(new ChangeBounds()) // Плавна зміна ширини
-                .addTransition(new Fade())         // Плавне зникнення/поява
-                .setDuration(400)                  // Трохи збільшимо час для м'якості
+                .addTransition(new ChangeBounds())
+                .addTransition(new Fade())
+                .setDuration(400)
                 .setInterpolator(new androidx.interpolator.view.animation.FastOutSlowInInterpolator());
     }
+
     private void setupSearchLogic() {
         final View filtersBtn = findViewById(R.id.btnFilters);
         final ConstraintLayout topBarLayout = findViewById(R.id.topBarConstraintLayout);
@@ -402,11 +402,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         final ImageView closeButton = searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
         final ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
 
-        // 1. ПЛАВНА КОМБІНОВАНА АНІМАЦІЯ
-        // Створюємо набір: ChangeBounds (для розтягування бару) + Fade (для зникнення кнопок)
-
-
-        // 2. АКТИВАЦІЯ ПО ВСІЙ ПОВЕРХНІ
         View.OnClickListener onSearchAreaClick = v -> {
             searchEditText.requestFocus();
             android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
@@ -419,19 +414,16 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         searchEditText.setOnClickListener(onSearchAreaClick);
         if (searchIcon != null) searchIcon.setOnClickListener(onSearchAreaClick);
 
-        // 3. ЛОГІКА ФОКУСУ ТА РОЗГОРТАННЯ
         searchEditText.setOnFocusChangeListener((v, hasFocus) -> {
             TransitionManager.beginDelayedTransition(topBarLayout, createTransition());
 
             if (hasFocus) {
-                // ХОВАЄМО ВСЕ ЗАЙВЕ
                 filtersBtn.setVisibility(View.GONE);
 
                 if (closeButton != null) {
                     closeButton.post(() -> closeButton.setVisibility(View.VISIBLE));
                 }
             } else {
-                // ПОВЕРТАЄМО, ЯКЩО ПОШУК ПОРОЖНІЙ
                 if (searchView.getQuery().length() == 0) {
                     filtersBtn.setVisibility(View.VISIBLE);
                     if (closeButton != null) closeButton.setVisibility(View.GONE);
@@ -439,14 +431,12 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             }
         });
 
-        // 4. ЛОГІКА ХРЕСТИКА (ЗАКРИТТЯ)
         if (closeButton != null) {
             closeButton.setOnClickListener(v -> {
                 if (searchView.getQuery().length() > 0) {
                     searchView.setQuery("", false);
                     closeButton.post(() -> closeButton.setVisibility(View.VISIBLE));
                 } else {
-                    // ПОВНЕ ЗАКРИТТЯ
                     searchEditText.clearFocus();
 
                     TransitionManager.beginDelayedTransition(topBarLayout, createTransition());
@@ -461,7 +451,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             });
         }
 
-        // 5. СЛУХАЧ ТЕКСТУ
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -480,46 +469,38 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             }
         });
     }
+
     private void setupSortLogic() {
         String[] sortOptions = {"Default", "Name", "Year", "Rating", "Genre", "Tag", "Platform", "Language"};
 
         tvSort.setOnClickListener(v -> {
             ListPopupWindow popup = new ListPopupWindow(this);
 
-            // 1. Адаптер з твоїм дизайном елементів
             popup.setAdapter(new ArrayAdapter<>(this, R.layout.spinner_dropdown_item, sortOptions));
-
-            // 2. Якір — TextView
             popup.setAnchorView(tvSort);
-
-            // 3. Дизайн фону
             popup.setBackgroundDrawable(androidx.core.content.ContextCompat.getDrawable(this, R.drawable.dialog_bg));
 
-            // 4. Розміри
             int popupWidth = (int) (150 * getResources().getDisplayMetrics().density);
             popup.setWidth(popupWidth);
             popup.setHeight(ListPopupWindow.WRAP_CONTENT);
             popup.setModal(true);
 
-            // 5. ІДЕАЛЬНЕ ЦЕНТРУВАННЯ ТА ПОЗИЦІЯ (як у MainActivity)
             tvSort.post(() -> {
                 int tvWidth = tvSort.getWidth();
                 int horizontalOffset = (tvWidth - popupWidth) / 2;
                 popup.setHorizontalOffset(horizontalOffset);
-                popup.setVerticalOffset(0); // Рівно під кнопкою
+                popup.setVerticalOffset(0);
                 popup.show();
             });
 
-            // 6. Клік
             popup.setOnItemClickListener((parent, view, position, id) -> {
                 String selected = sortOptions[position];
                 tvSort.setText(selected);
-                handleSortSelection(selected); // Твій метод обробки фільтрів
+                handleSortSelection(selected);
                 popup.dismiss();
             });
         });
 
-        // Кнопка напрямку (ASC/DESC) з анімацією повороту
         btnSortDirection.setOnClickListener(v -> {
             isAscending = !isAscending;
             btnSortDirection.animate()
@@ -531,7 +512,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     }
 
     private void loadCategorySorted(int colId, boolean restoreScroll) {
-        // Отримуємо актуальне значення isGrid
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         boolean isGrid = prefs.getBoolean("is_main_grid", false);
 
@@ -544,7 +524,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             adapter = new GameAdapter(this, gamesToShow, dbHelper, isGrid, colId);
             recyclerView.setAdapter(adapter);
         } else {
-            adapter.setGrid(isGrid); // Передаємо актуальний режим у адаптер
+            adapter.setGrid(isGrid);
             adapter.submitList(gamesToShow, () -> {
                 if (!restoreScroll) recyclerView.scrollToPosition(0);
             });
@@ -552,7 +532,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     }
 
     private void filterGames(String query) {
-        // Отримуємо базовий список ігор цієї колекції з урахуванням поточного сортування та фільтрів
         List<Game> allGames = dbHelper.getGamesByCollectionSorted(collectionId, currentSortCriteria,
                 selectedGenreFilter, selectedTagFilter, selectedPlatformFilter, selectedLanguageFilter);
 
@@ -572,7 +551,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         }
 
         adapter.submitList(filtered, () -> {
-            // Показуємо напис "Порожньо", якщо нічого не знайдено саме пошуком
             tvEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
         });
     }
@@ -594,19 +572,16 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     }
 
     private void showAddGamesDialog() {
-        // 1. Завантажуємо всі ігри
         List<Game> allGames = dbHelper.getAllGames();
         List<Game> currentInCol = dbHelper.getGamesInCollection(collectionId);
         List<Integer> currentIds = new ArrayList<>();
         for (Game g : currentInCol) currentIds.add(g.getId());
 
-        // Створюємо список моделей для вибору
         List<SelectableGame> selectableGames = new ArrayList<>();
         for (Game g : allGames) {
             selectableGames.add(new SelectableGame(g, currentIds.contains(g.getId())));
         }
 
-        // 2. Створюємо View діалогу
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_selector, null);
         androidx.appcompat.widget.SearchView sv = dialogView.findViewById(R.id.svGameSelector);
         RecyclerView rv = dialogView.findViewById(R.id.rvGameSelector);
@@ -615,7 +590,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(selectorAdapter);
 
-        // Логіка пошуку
         sv.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override public boolean onQueryTextSubmit(String q) { return false; }
             @Override public boolean onQueryTextChange(String newText) {
@@ -624,7 +598,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             }
         });
 
-        // 3. Показуємо AlertDialog
         new AlertDialog.Builder(this, R.style.MyDialogTheme)
                 .setTitle("Add games to " + collectionName)
                 .setView(dialogView)
@@ -635,13 +608,13 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                             dbHelper.addGameToCollection(collectionId, sg.game.getId());
                         }
                     }
-                    loadGames(); // Оновити список в Activity
+                    loadGames();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
     private void showGenreFilterDialog() {
-        // ВАЖЛИВО: беремо жанри ТІЛЬКИ цієї колекції
         List<String> allGenres = dbHelper.getGenresInCollection(collectionId);
 
         if (allGenres.isEmpty()) {
@@ -690,8 +663,8 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             selectedGenreFilter = "";
         });
     }
+
     private void showLanguageFilterDialog() {
-        // Беремо мови ТІЛЬКИ цієї колекції
         List<String> allLanguages = dbHelper.getLanguagesInCollection(collectionId);
 
         if (allLanguages.isEmpty()) {
@@ -740,8 +713,8 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             selectedLanguageFilter = "";
         });
     }
+
     private void showPlatformFilterDialog() {
-        // Беремо платформи ТІЛЬКИ цієї колекції
         List<String> allPlatforms = dbHelper.getPlatformsInCollection(collectionId);
 
         if (allPlatforms.isEmpty()) {
@@ -790,6 +763,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             selectedPlatformFilter = "";
         });
     }
+
     private void showTagFilterDialog() {
         List<String> allTags = dbHelper.getTagsInCollection(collectionId);
         if (allTags.isEmpty()) {
@@ -814,7 +788,6 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             }
         });
 
-        // 1. Створюємо діалог
         androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
                 .setTitle("Tags in " + collectionName)
                 .setView(dialogView)
@@ -830,16 +803,15 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                     applyAndLoad();
                 })
                 .setNegativeButton("Cancel", null)
-                .create(); // Використовуємо create() замість show()
+                .create();
 
-        // 2. ВСТАНОВЛЮЄМО ВАШ БЕКГРАУНД (це те, що зникло)
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_bg);
         }
 
-        // 3. Показуємо
         dialog.show();
     }
+
     public class SelectableGame {
         public Game game;
         public boolean isSelected;
@@ -849,6 +821,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             this.isSelected = isSelected;
         }
     }
+
     private class FilterSelectionAdapter extends RecyclerView.Adapter<FilterSelectionAdapter.ViewHolder> {
         private List<String> allItems;
         private List<String> filteredItems;
@@ -907,5 +880,3 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         }
     }
 }
-
-
