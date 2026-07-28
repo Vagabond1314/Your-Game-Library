@@ -58,9 +58,3 @@ To build this app locally using Android Studio or the command line:
 
 This project is licensed under the GNU General Public License v3.0 (or your
 chosen license) - see the LICENSE file for details.
-
-
----
-
-### 💡 Quick Tip:
-Replace `yourusername/yourapp` with your actual GitHub username and repository name before committing!
