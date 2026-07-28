@@ -43,6 +43,10 @@ public class AchievementManager {
                         a.isUnlocked = totalHours >= 1000f;
                         a.progressText = String.format(java.util.Locale.getDefault(), "%.0f / 1000h", Math.min(totalHours, 1000f));
                         break;
+                    case "touch_some_grass_dude":
+                        a.isUnlocked = totalHours >= 2000f;
+                        a.progressText = String.format(java.util.Locale.getDefault(), "%.0f / 2000h", Math.min(totalHours, 2000f));
+                        break;
                     case "game_finisher":
                         a.isUnlocked = completedCount >= 1;
                         a.progressText = Math.min(completedCount, 1) + " / 1 game";
@@ -85,10 +89,10 @@ public class AchievementManager {
                             a.progressText = String.format(java.util.Locale.getDefault(), "%.0f / 300h", Math.min(gameTime, 300f));
                             break;
 
-                        case "ds3":
-                            a.isUnlocked = gameTime >= 200f;
-                            a.progressText = String.format(java.util.Locale.getDefault(), "%.0f / 200h", Math.min(gameTime, 200f));
-                            break;
+//                        case "ds3":
+//                            a.isUnlocked = gameTime >= 200f;
+//                            a.progressText = String.format(java.util.Locale.getDefault(), "%.0f / 200h", Math.min(gameTime, 200f));
+//                            break;
                     }
                 } else {
                     // ГРИ НЕМАЄ В БІБЛІОТЕЦІ
@@ -112,9 +116,10 @@ public class AchievementManager {
         list.add(new Achievement("game_finisher", "First Blood", "Complete your first game.", R.drawable.ic_collections));
         list.add(new Achievement("completionist", "Completionist", "Complete 50 games.", R.drawable.ic_safe));
         list.add(new Achievement("one_game_wonder", "Dedication", "Spend 200+ hours in a single game.", R.drawable.ic_xbox));
+        list.add(new Achievement("touch_some_grass_dude", "Touch some grass dude", "Total time 2000+ hours.", R.drawable.ic_igdb));
 
         // 2. Специфічні ігрові ачівки (ОСТАННІЙ АРГУМЕНТ — НАЗВА ГРИ!)
-        list.add(new Achievement("ds3", "Незвичайна людина", "200 годин в ДС3, Влад, ти не звичайна людина.", R.drawable.ds3, "Dark Souls III", false));
+        // list.add(new Achievement("ds3", "Незвичайна людина", "200 годин в ДС3, Влад, ти не звичайна людина.", R.drawable.ds3, "Dark Souls III", false));
 
         return list;
     }
