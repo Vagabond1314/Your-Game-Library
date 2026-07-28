@@ -289,7 +289,8 @@ public class StatisticsActivity extends AppCompatActivity {
 
             tvRank.setText(String.valueOf(i + 1));
             tvTitle.setText(g.getName());
-            tvTime.setText(g.getTime() + "h 0m");
+            String formattedTime = String.format(java.util.Locale.US, "%.1f", g.getTime());
+            tvTime.setText(formattedTime + "h");
 
             // Завантаження картинки
             String imagePath = g.getImagePath() != null ? g.getImagePath() : g.getImageUrl();
