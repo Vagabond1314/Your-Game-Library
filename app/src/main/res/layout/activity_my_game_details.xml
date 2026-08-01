@@ -408,7 +408,7 @@
                         android:orientation="vertical"
                         android:padding="16dp"
                         android:visibility="gone">
-                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:letterSpacing="0.05" android:text="WISHLISTED STATS" android:textColor="#2D5E85" android:textSize="14sp" android:textStyle="bold" />
+                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:letterSpacing="0.05" android:text="PLANNED STATS" android:textColor="#2D5E85" android:textSize="14sp" android:textStyle="bold" />
                         <View android:layout_width="30dp" android:layout_height="2dp" android:layout_gravity="center" android:layout_marginTop="4dp" android:layout_marginBottom="12dp" android:background="#2D5E85" />
                         <androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardBackgroundColor="#262626" app:cardCornerRadius="10dp" app:cardElevation="0dp">
                             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">

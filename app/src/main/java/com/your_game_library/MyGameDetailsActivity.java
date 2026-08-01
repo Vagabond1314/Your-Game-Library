@@ -312,13 +312,13 @@ public class MyGameDetailsActivity extends AppCompatActivity {
     }
     // 1. ДІАЛОГ ЗМІНИ СТАТУСУ ГРИ
     private void showChangeStatusDialog() {
-        String[] categories = {"planned", "playing", "completed"};
+        String[] categories = {"planned", "playing", "beaten"};
         int checkedItem = java.util.Arrays.asList(categories).indexOf(game.getCategory().toLowerCase());
         int colorGreen = android.graphics.Color.parseColor("#58A870");
 
         AlertDialog dialog = new AlertDialog.Builder(this, R.style.MyDialogTheme)
                 .setTitle("Change Game Status")
-                .setSingleChoiceItems(new String[]{"Planned", "Playing", "Completed"}, checkedItem, (d, which) -> {
+                .setSingleChoiceItems(new String[]{"Planned", "Playing", "Beaten"}, checkedItem, (d, which) -> {
                     String newCat = categories[which];
                     d.dismiss();
 
@@ -328,7 +328,7 @@ public class MyGameDetailsActivity extends AppCompatActivity {
                     }
 
                     // Викликаємо відповідний Bottom Sheet, який сам збереже все в БД
-                    if (newCat.equals("completed")) {
+                    if (newCat.equals("beaten")) {
                         showCompletedBottomSheet();
                     } else if (newCat.equals("playing")) {
                         showPlayingBottomSheet();

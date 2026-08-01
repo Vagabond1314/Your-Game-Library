@@ -204,7 +204,7 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="Wishlist"
+                    android:text="PLANNED"
                     android:textColor="#2D5E85"
                     android:textSize="12sp"
                     app:backgroundTint="#1A2D5E85"

@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Game wishlisted!"
+        android:text="Game planned!"
         android:textColor="#2D5E85"
         android:textSize="22sp"
         android:textStyle="bold"

@@ -23,13 +23,18 @@ import com.bumptech.glide.Glide;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder> {
 
     private final Context context;
     private final GameDatabaseHelper dbHelper;
     private boolean isGrid;
+
+    // Track images currently being downloaded to prevent duplicate threads
+    private final Set<Integer> downloadingGameIds = new HashSet<>();
 
     public enum AdapterMode {
         MAIN_LIST,
@@ -51,31 +56,40 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
     };
     private final AsyncListDiffer<Game> differ = new AsyncListDiffer<>(this, diffCallback);
 
-    public void setGames(List<Game> games){
-        differ.submitList(games);
-    }
-
     public GameAdapter(Context context, List<Game> initialList, GameDatabaseHelper dbHelper, boolean isGrid) {
         this.context = context;
         this.dbHelper = dbHelper;
         this.isGrid = isGrid;
         this.mode = AdapterMode.MAIN_LIST;
         setHasStableIds(true);
+        // KEEP SCROLL POSITION AUTOMATICALLY:
+        setStateRestorationPolicy(StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         submitList(initialList, null);
     }
 
     public GameAdapter(Context context, List<Game> initialList, GameDatabaseHelper dbHelper, boolean isGrid, int collectionId) {
         this.context = context;
         this.dbHelper = dbHelper;
+        this.isGrid = isGrid;
         this.mode = AdapterMode.COLLECTION_LIST;
         this.collectionId = collectionId;
         setHasStableIds(true);
+        // KEEP SCROLL POSITION AUTOMATICALLY:
+        setStateRestorationPolicy(StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         submitList(initialList, null);
     }
 
     public void setGrid(boolean grid) {
-        this.isGrid = grid;
-        notifyDataSetChanged();
+        if (this.isGrid != grid) {
+            this.isGrid = grid;
+            notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        // FIX #1: Return distinct view types for Grid (1) vs List (0)
+        return isGrid ? 1 : 0;
     }
 
     @Override
@@ -91,17 +105,11 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
         return differ.getCurrentList();
     }
 
-    public void addGame(Game game, Runnable commitCallback) {
-        List<Game> updated = new ArrayList<>(differ.getCurrentList());
-        updated.add(game);
-        submitList(updated, commitCallback);
-    }
-
     @NonNull
     @Override
     public GameViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Якщо включено режим сітки, беремо макет item_grid_game.xml, інакше - item_game.xml
-        int layoutId = isGrid ? R.layout.item_grid_game : R.layout.item_game;
+        // Inflate correct XML layout based on viewType
+        int layoutId = (viewType == 1) ? R.layout.item_grid_game : R.layout.item_game;
         View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
         return new GameViewHolder(view);
     }
@@ -114,50 +122,47 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
         TextView tvGamePriority = holder.itemView.findViewById(R.id.tvGamePriority);
         View llTimeSpent = holder.itemView.findViewById(R.id.llTimeSpent);
         TextView tvGameTimeSpent = holder.itemView.findViewById(R.id.tvGameTimeSpent);
-        //Log.d("PRIORITY_DEBUG", "Гра в адаптері: " + game.getName() + " | Категорія: " + game.getCategory() + " | Пріоритет: " + game.getPriority());
-        //Log.d("PRIORITY_DEBUG", "Чи знайдено llPriority в макеті? " + (llPriority != null));
+
+        // Reset visibility states
         if (llPriority != null) llPriority.setVisibility(View.GONE);
         if (llTimeSpent != null) llTimeSpent.setVisibility(View.GONE);
         if (holder.gameRating != null) holder.gameRating.setVisibility(View.GONE);
-        // --- ЛОГІКА ПЛАШОК (Пріоритет або Рейтинг) ---
+
+        // --- BADGES LOGIC (Priority, Rating, Time Spent) ---
         if ("planned".equalsIgnoreCase(game.getCategory())) {
-            // Ховаємо рейтинг для Planned ігор
             if (game.getRating() != null && game.getRating() > 0) {
                 if (holder.gameRating != null) {
-                    holder.gameRating.setText("★ " + game.getRating());
+                    holder.gameRating.setText("★ " + String.format(java.util.Locale.ROOT, "%.1f", game.getRating()));
                     holder.gameRating.setVisibility(View.VISIBLE);
                 }
-            } else {
-                if (holder.gameRating != null) holder.gameRating.setVisibility(View.GONE);
             }
-
             if (game.getPriority() != null && game.getPriority() > 0) {
                 if (llPriority != null) llPriority.setVisibility(View.VISIBLE);
                 if (tvGamePriority != null) tvGamePriority.setText(String.valueOf(game.getPriority()));
-            } else {
-                if (llPriority != null) llPriority.setVisibility(View.GONE);
             }
-        }        else if ("completed".equalsIgnoreCase(game.getCategory())) {
-            // Показуємо оцінку користувача (якщо є)
+        } else if ("completed".equalsIgnoreCase(game.getCategory())) {
             if (game.getRating() != null && game.getRating() > 0) {
                 if (holder.gameRating != null) {
                     holder.gameRating.setText("★ " + String.format(java.util.Locale.ROOT, "%.1f", game.getRating()));
                     holder.gameRating.setVisibility(View.VISIBLE);
                 }
             }
-            // Показуємо витрачений час (наприклад: "45h")
             if (game.getTime() != null && game.getTime() > 0) {
                 if (llTimeSpent != null) {
                     llTimeSpent.setVisibility(View.VISIBLE);
-                    Float time = game.getTime();
-                    time = (float) Math.round(time * 100) / 100;
+                    float time = (float) Math.round(game.getTime() * 10) / 10;
                     if (tvGameTimeSpent != null) tvGameTimeSpent.setText(time + "h");
                 }
             }
-        }
-        // --- 3. КАТЕГОРІЯ: PLAYING ---
-        else if ("playing".equalsIgnoreCase(game.getCategory())) {
-            // Для ігор в процесі показуємо тільки оцінку (якщо є)
+        } else if ("playing".equalsIgnoreCase(game.getCategory())) {
+            if (game.getRating() != null && game.getRating() > 0) {
+                if (holder.gameRating != null) {
+                    holder.gameRating.setText("★ " + String.format(java.util.Locale.ROOT, "%.1f", game.getRating()));
+                    holder.gameRating.setVisibility(View.VISIBLE);
+                }
+            }
+        } else {
+            // FIX #3: Null check added to prevent NullPointerException
             if (game.getRating() != null && game.getRating() > 0) {
                 if (holder.gameRating != null) {
                     holder.gameRating.setText("★ " + String.format(java.util.Locale.ROOT, "%.1f", game.getRating()));
@@ -165,24 +170,14 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
                 }
             }
         }
-        else {
-                    holder.gameRating.setText("★ " + String.format(java.util.Locale.ROOT, "%.1f", game.getRating()));
-                    holder.gameRating.setVisibility(View.VISIBLE);
 
+        // --- GAME NAME DISPLAY ---
+        if (holder.gameName != null && !isGrid) {
+            holder.gameName.setVisibility(View.VISIBLE);
+            holder.gameName.setText(game.getName());
         }
 
-
-        // --- ЛОГІКА ВІДОБРАЖЕННЯ НАЗВИ (Сітка чи Список) ---
-        if (isGrid) {
-            if (holder.gameName != null) holder.gameName.setVisibility(View.GONE);
-        } else {
-            if (holder.gameName != null) {
-                holder.gameName.setVisibility(View.VISIBLE);
-                holder.gameName.setText(game.getName());
-            }
-        }
-
-        // --- ЛОГІКА КАРТИНКИ ---
+        // --- IMAGE LOADING LOGIC ---
         String path = game.getImagePath();
         String remoteUrl = game.getImageUrl();
 
@@ -207,7 +202,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
             holder.gameImage.setImageResource(R.drawable.placeholder);
         }
 
-        // --- ЛОГІКА КЛІКІВ ---
+        // --- CLICK LISTENERS ---
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MyGameDetailsActivity.class);
             intent.putExtra("gameId", game.getId());
@@ -268,6 +263,10 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
     }
 
     private void downloadImageLocally(Game game, String imageUrl) {
+        // FIX #2: Prevent duplicate background download threads for the same game
+        if (downloadingGameIds.contains(game.getId())) return;
+        downloadingGameIds.add(game.getId());
+
         new Thread(() -> {
             try {
                 File dir = new File(context.getFilesDir(), "game_images");
@@ -276,17 +275,19 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
                 Bitmap bitmap = Glide.with(context).asBitmap().load(imageUrl).submit().get();
 
                 if (bitmap != null) {
-                    File file = new File(dir, "img_" + System.currentTimeMillis() + ".webp");
+                    File file = new File(dir, "img_" + game.getId() + "_" + System.currentTimeMillis() + ".webp");
                     FileOutputStream out = new FileOutputStream(file);
                     bitmap.compress(Bitmap.CompressFormat.WEBP, 70, out);
                     out.close();
 
                     game.setImagePath(file.getAbsolutePath());
+                    // Update database without triggering UI reload loops
                     dbHelper.updateGame(game);
-                    Log.d("ADAPTER_SAVE", "Saved locally: " + game.getName());
                 }
             } catch (Exception e) {
                 Log.e("ADAPTER_SAVE", "Error saving image for " + game.getName());
+            } finally {
+                downloadingGameIds.remove(game.getId());
             }
         }).start();
     }
