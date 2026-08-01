@@ -25,8 +25,8 @@ android {
         applicationId = "com.your_game_library"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.1.1"
 
         // 2. Виправлено синтаксис buildConfigField
         buildConfigField("String", "IGDB_ID", "\"${localProperties.getProperty("IGDB_CLIENT_ID")}\"")
@@ -42,11 +42,9 @@ android {
 
     buildTypes {
         release {
-            // 3. У Kotlin DSL булеві змінні пишуться через "is..." та "="
             isMinifyEnabled = true
             isShrinkResources = true
 
-            // 4. Виправлено шлях до Proguard та подвійні лапки
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
