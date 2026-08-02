@@ -1236,9 +1236,12 @@ public class MyGameDetailsActivity extends AppCompatActivity {
 
         SteamStoreApiService api = steamRetrofit.create(SteamStoreApiService.class);
 
-        // Визначаємо регіон телефону, щоб Steam віддав ціну у правильній валюті (US, UA, DE тощо)
-        String countryCode = java.util.Locale.getDefault().getCountry().toLowerCase();
-        if (countryCode.isEmpty()) countryCode = "us"; // Фолбек на долари
+        // БЕРЕМО КРАЇНУ З ПАМ'ЯТІ (обрану в SteamSyncActivity)
+        android.content.SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
+        String countryCode = prefs.getString("steam_country_code", java.util.Locale.getDefault().getCountry()).toLowerCase();
+
+        // Фолбек, якщо країну ніколи не обирали
+        if (countryCode.isEmpty()) countryCode = "us";
 
         api.getGamePrice(appId, countryCode).enqueue(new Callback<com.google.gson.JsonObject>() {
             @Override
@@ -1267,17 +1270,14 @@ public class MyGameDetailsActivity extends AppCompatActivity {
                                         tvSteamOriginalPrice.setText(initialPrice);
                                         tvSteamFinalPrice.setText(finalPrice);
 
-                                        // Робимо стару ціну закресленою
                                         tvSteamOriginalPrice.setPaintFlags(tvSteamOriginalPrice.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
                                     } else {
-                                        // Якщо знижки немає
                                         tvSteamDiscount.setVisibility(View.GONE);
                                         tvSteamOriginalPrice.setVisibility(View.GONE);
                                         tvSteamFinalPrice.setText(finalPrice);
                                     }
                                 });
                             } else if (data.has("is_free") && data.get("is_free").getAsBoolean()) {
-                                // Якщо гра безкоштовна
                                 runOnUiThread(() -> {
                                     steamPriceContainer.setVisibility(View.VISIBLE);
                                     tvSteamDiscount.setVisibility(View.GONE);

@@ -5,8 +5,10 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,7 +21,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,6 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SteamSyncActivity extends AppCompatActivity {
 
     private TextInputEditText etSteamId;
+    private Spinner spinnerCountry;
     private Button btnFetchPreview, btnStartSync, btnSelectAll;
     private LinearLayout llInputContainer, llPreviewContainer;
     private TextView tvPreviewGames;
@@ -44,6 +49,7 @@ public class SteamSyncActivity extends AppCompatActivity {
 
     private static final String PREF_NAME = "app_settings";
     private static final String KEY_STEAM_ID = "saved_steam_id";
+    private static final String KEY_STEAM_COUNTRY = "steam_country_code";
 
     private final String STEAM_API_KEY = Config.STEAM_API_KEY;
 
@@ -65,6 +71,7 @@ public class SteamSyncActivity extends AppCompatActivity {
         steamApi = steamRetrofit.create(SteamApiService.class);
 
         etSteamId = findViewById(R.id.etSteamId);
+        spinnerCountry = findViewById(R.id.spinnerCountry);
         btnFetchPreview = findViewById(R.id.btnFetchPreview);
         btnStartSync = findViewById(R.id.btnStartSync);
         btnSelectAll = findViewById(R.id.btnSelectAll);
@@ -76,12 +83,35 @@ public class SteamSyncActivity extends AppCompatActivity {
 
         rvSteamGames.setLayoutManager(new LinearLayoutManager(this));
 
-        // REMEMBER FEATURE: Auto-fill saved SteamID
+        // 1. ЗБЕРЕЖЕНИЙ STEAM ID
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         String savedSteamId = prefs.getString(KEY_STEAM_ID, "");
         if (!savedSteamId.isEmpty()) {
             etSteamId.setText(savedSteamId);
             etSteamId.setSelection(savedSteamId.length());
+        }
+
+        // 2. ДИНАМІЧНИЙ СПИСОК КРАЇН
+        List<String> countryList = new ArrayList<>();
+        String[] isoCodes = Locale.getISOCountries();
+        for (String code : isoCodes) {
+            Locale loc = new Locale("", code);
+            countryList.add(code + " - " + loc.getDisplayCountry(Locale.ENGLISH));
+        }
+        Collections.sort(countryList);
+
+        // Налаштування адаптера для Spinner
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, countryList);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCountry.setAdapter(spinnerAdapter);
+
+        // Вибір збереженої країни або країни за замовчуванням
+        String savedCountry = prefs.getString(KEY_STEAM_COUNTRY, Locale.getDefault().getCountry());
+        for (int i = 0; i < countryList.size(); i++) {
+            if (countryList.get(i).startsWith(savedCountry.toUpperCase())) {
+                spinnerCountry.setSelection(i);
+                break;
+            }
         }
 
         btnFetchPreview.setOnClickListener(v -> {
@@ -91,10 +121,15 @@ public class SteamSyncActivity extends AppCompatActivity {
                 return;
             }
 
-            // Save SteamID to memory
+            // Отримуємо вибрану країну зі спінера (перші 2 літери)
+            String selectedCountryString = spinnerCountry.getSelectedItem().toString();
+            String countryCode = selectedCountryString.substring(0, 2).toLowerCase();
+
+            // Зберігаємо SteamID та код країни в пам'ять
             getSharedPreferences(PREF_NAME, MODE_PRIVATE)
                     .edit()
                     .putString(KEY_STEAM_ID, steamId)
+                    .putString(KEY_STEAM_COUNTRY, countryCode)
                     .apply();
 
             fetchSteamLibraryPreview(steamId);
@@ -111,14 +146,11 @@ public class SteamSyncActivity extends AppCompatActivity {
 
         if (svSteamGames != null) {
             svSteamGames.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
+                @Override public boolean onQueryTextSubmit(String query) {
                     if (adapter != null) adapter.filter(query);
                     return true;
                 }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
+                @Override public boolean onQueryTextChange(String newText) {
                     if (adapter != null) adapter.filter(newText);
                     return true;
                 }
