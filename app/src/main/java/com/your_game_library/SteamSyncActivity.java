@@ -1,6 +1,7 @@
 package com.your_game_library;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -41,6 +42,9 @@ public class SteamSyncActivity extends AppCompatActivity {
     private SteamPreviewAdapter adapter;
     private boolean isAllSelected = true;
 
+    private static final String PREF_NAME = "app_settings";
+    private static final String KEY_STEAM_ID = "saved_steam_id";
+
     private final String STEAM_API_KEY = Config.STEAM_API_KEY;
 
     @Override
@@ -68,9 +72,17 @@ public class SteamSyncActivity extends AppCompatActivity {
         llPreviewContainer = findViewById(R.id.llPreviewContainer);
         tvPreviewGames = findViewById(R.id.tvPreviewGames);
         rvSteamGames = findViewById(R.id.rvSteamGames);
-        svSteamGames = findViewById(R.id.svSteamGames); // Search view for games
+        svSteamGames = findViewById(R.id.svSteamGames);
 
         rvSteamGames.setLayoutManager(new LinearLayoutManager(this));
+
+        // REMEMBER FEATURE: Auto-fill saved SteamID
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        String savedSteamId = prefs.getString(KEY_STEAM_ID, "");
+        if (!savedSteamId.isEmpty()) {
+            etSteamId.setText(savedSteamId);
+            etSteamId.setSelection(savedSteamId.length());
+        }
 
         btnFetchPreview.setOnClickListener(v -> {
             String steamId = etSteamId.getText().toString().trim();
@@ -78,6 +90,13 @@ public class SteamSyncActivity extends AppCompatActivity {
                 etSteamId.setError("Valid 17-digit SteamID64 required");
                 return;
             }
+
+            // Save SteamID to memory
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+                    .edit()
+                    .putString(KEY_STEAM_ID, steamId)
+                    .apply();
+
             fetchSteamLibraryPreview(steamId);
         });
 
@@ -90,7 +109,6 @@ public class SteamSyncActivity extends AppCompatActivity {
             if (adapter != null) adapter.notifyDataSetChanged();
         });
 
-        // Setup search logic
         if (svSteamGames != null) {
             svSteamGames.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
