@@ -51,7 +51,6 @@
             </RelativeLayout>
 
             <!-- СОРТУВАННЯ -->
-            <!-- СОРТУВАННЯ -->
             <TextView style="@style/AdminLabel" android:text="Sort By" android:layout_marginTop="16dp" />
 
             <com.google.android.material.chip.ChipGroup
@@ -67,6 +66,10 @@
                 <com.google.android.material.chip.Chip android:id="@+id/chipName" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Name" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
                 <com.google.android.material.chip.Chip android:id="@+id/chipYear" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Year" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
                 <com.google.android.material.chip.Chip android:id="@+id/chipRating" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rating" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFFFFF"/>
+
+                <!-- Сортування за ціною та знижками -->
+                <com.google.android.material.chip.Chip android:id="@+id/chipPrice" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Price" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#FFC107"/>
+                <com.google.android.material.chip.Chip android:id="@+id/chipDiscount" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Discount" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#A4D007"/>
 
                 <!-- Нові сортування (PLANNED) -->
                 <com.google.android.material.chip.Chip android:id="@+id/chipPriority" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Priority" app:chipBackgroundColor="@color/chip_background_selector" android:textColor="@color/chip_text_selector" app:chipStrokeWidth="1dp" app:chipStrokeColor="#44FFFFFF" app:checkedIconVisible="false" app:chipIcon="@drawable/ic_arrow" app:chipIconTint="#2D5E85"/>
@@ -84,7 +87,6 @@
             <!-- ФІЛЬТРИ -->
             <TextView style="@style/AdminLabel" android:text="Filters" android:layout_marginTop="16dp" />
 
-            <!-- Кожна секція стала компактнішою -->
             <LinearLayout style="@style/FilterRowContainer" android:layout_marginTop="8dp">
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFilterGenres"
@@ -123,14 +125,14 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ФІКСОВАНА КНОПКА (Завжди видима) -->
+    <!-- ФІКСОВАНА КНОПКА -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="20dp"
         android:paddingBottom="20dp"
         android:paddingTop="10dp"
-        android:background="#1E1E1E"> <!-- Фон такий же як у листа, щоб не було розриву -->
+        android:background="#1E1E1E">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnApplyFilters"

@@ -378,11 +378,23 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     }
 
     private String getSortLabelByColumn(String column) {
+        if (column == null) return "Default";
         switch (column) {
             case "name": return "Name";
             case "released": return "Year";
             case "rating": return "Rating";
-            default: return "Default";
+            case "priority": return "Priority";
+            case "date_added": return "Date Added";
+            case "date_started": return "Date Started";
+            case "time_spent": return "Time Spent";
+            case "date_completed": return "Finished Date";
+            case "playthroughs": return "Playthroughs";
+            case "comp_type": return "Comp. Type";
+            case "price": return "Price";
+            case "discount": return "Discount";
+            case "id":
+            default:
+                return "Default";
         }
     }
 

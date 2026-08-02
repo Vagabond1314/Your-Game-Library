@@ -14,7 +14,7 @@ import java.util.List;
 public class GameDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "games.db";
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
     private static GameDatabaseHelper instance;
 
     public GameDatabaseHelper(Context context) {
@@ -65,7 +65,9 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
                 "dateStartCompleted TEXT," +
                 "dateEndCompleted TEXT," +
                 "dateAddedPlanned TEXT," +
-                "dateStartedPlaying TEXT" +
+                "dateStartedPlaying TEXT," +
+                "price REAL DEFAULT 0," +       // NEW COLUMN
+                "discount INTEGER DEFAULT 0" +   // NEW COLUMN
                 ")";
         db.execSQL(CREATE_TABLE);
         db.execSQL("CREATE TABLE collections (" +
@@ -143,6 +145,12 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE games ADD COLUMN dateStartedPlaying TEXT");
 
             migrateLegacyStatsToColumns(db);
+        }
+        if (oldVersion < 18) {
+            try {
+                db.execSQL("ALTER TABLE games ADD COLUMN price REAL DEFAULT 0");
+                db.execSQL("ALTER TABLE games ADD COLUMN discount INTEGER DEFAULT 0");
+            } catch (Exception ignored) {}
         }
     }
 
@@ -1121,4 +1129,17 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
             if (cursor != null) cursor.close();
         }
     }
+    private boolean isValidColumn(String col) {
+        if (col == null) return false;
+        switch (col.toLowerCase()) {
+            case "id": case "name": case "released": case "rating":
+            case "priority": case "date_added": case "date_started":
+            case "time_spent": case "date_completed": case "playthroughs":
+            case "comp_type": case "price": case "discount":
+                return true;
+            default:
+                return false;
+        }
+    }
+
 }

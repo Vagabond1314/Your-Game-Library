@@ -42,6 +42,7 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
         this.selLangs = languages;
         this.listener = listener;
     }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -54,6 +55,7 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
             behavior.setSkipCollapsed(true);
         }
     }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -68,7 +70,6 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
         updateSummaryLabels();
         setupSortLogic(cgSort);
 
-        // Кнопки фільтрів
         v.findViewById(R.id.btnFilterGenres).setOnClickListener(view -> listener.onOpenGenreDialog(this));
         v.findViewById(R.id.btnFilterTags).setOnClickListener(view -> listener.onOpenTagDialog(this));
         v.findViewById(R.id.btnFilterPlatforms).setOnClickListener(view -> listener.onOpenPlatformDialog(this));
@@ -94,7 +95,6 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
             Chip chip = (Chip) group.getChildAt(i);
             String chipSortValue = getSortValueFromId(chip.getId());
 
-            // 1. ПОЧАТКОВИЙ СТАН ПРИ ВІДКРИТТІ
             if (chipSortValue.equals(currentSortColumn)) {
                 chip.setChecked(true);
                 chip.setChipIconVisible(true);
@@ -106,7 +106,6 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
                 chip.setChipIconVisible(false);
             }
 
-            // 2. ОБРОБКА НАТИСКАННЯ
             chip.setOnClickListener(v -> {
                 if (chipSortValue.equals(currentSortColumn)) {
                     isAscending = !isAscending;
@@ -130,18 +129,21 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
-    // --- ПРАВИЛЬНИЙ І ПОВНИЙ МАПІНГ УСІХ ЧІПІВ СОРТУВАННЯ ---
     private String getSortValueFromId(int id) {
         if (id == R.id.chipName) return "name";
         if (id == R.id.chipYear) return "released";
         if (id == R.id.chipRating) return "rating";
 
-        // Додаємо наші нові чіпи для нативного сортування:
+        // Store / Price Sorts
+        if (id == R.id.chipPrice) return "price";
+        if (id == R.id.chipDiscount) return "discount";
+
+        // Native sorts
         if (id == R.id.chipPriority) return "priority";
         if (id == R.id.chipDateAdded) return "date_added";
         if (id == R.id.chipDateStarted) return "date_started";
         if (id == R.id.chipTimeSpent) return "time_spent";
-        if (id == R.id.chipDateFinished) return "date_completed"; // Має збігатися з XML id
+        if (id == R.id.chipDateFinished) return "date_completed";
         if (id == R.id.chipPlaythroughs) return "playthroughs";
 
         return "id";

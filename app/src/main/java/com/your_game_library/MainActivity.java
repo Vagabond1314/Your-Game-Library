@@ -287,6 +287,8 @@ public class MainActivity extends AppCompatActivity {
             case "date_completed": return "Finished Date";
             case "playthroughs": return "Playthroughs";
             case "comp_type": return "Comp. Type";
+            case "price": return "Price";
+            case "discount": return "Discount";
             case "id":
             default:
                 return "Default";

@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,6 +54,10 @@ public class GameDetailsActivity extends AppCompatActivity {
     private ViewPager2 screenshotsViewPager;
     private Button btnPlanned, btnPlaying, btnCompleted, btnOpenIgdb, btnOpenSteam;
 
+    // Price UI
+    private LinearLayout steamPriceContainer;
+    private TextView tvSteamDiscount, tvSteamOriginalPrice, tvSteamFinalPrice;
+
     // IGDB Credentials
     String CLIENT_ID = Config.IGDB_CLIENT_ID;
     String CLIENT_SECRET = Config.IGDB_CLIENT_SECRET;
@@ -70,15 +75,15 @@ public class GameDetailsActivity extends AppCompatActivity {
     private boolean isStorylineExpanded = false;
     private boolean isSummaryLineExpanded = false;
 
-    private final int CHIPS_LIMIT = 5; // Ліміт для всіх груп
+    private final int CHIPS_LIMIT = 5;
     private String mainImageUrl = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         db = GameDatabaseHelper.getInstance(this);
 
-        // Отримання даних з Intent
         gameId = getIntent().getIntExtra("game_id", -1);
         gameNameFromIntent = getIntent().getStringExtra("game_name");
 
@@ -88,18 +93,13 @@ public class GameDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        // --- НОВА ЛОГІКА: ПЕРЕВІРКА В БД ---
         Game existingGame = null;
         if (gameId != -1) {
-            existingGame = db.getGameByIdObject(gameId); // Перевіряємо за ID
+            existingGame = db.getGameByIdObject(gameId);
         }
 
-        // Якщо за ID не знайшло, або ID не було, перевіряємо за назвою (для надійності)
         if (existingGame == null && gameNameFromIntent != null) {
             if (db.isGameExists(gameNameFromIntent)) {
-                // Якщо метод getGameByNameObject не існує у твоєму хелпері, просто отримай категорію,
-                // або витягни ID через базу, щоб передати його далі.
-                // Припустимо, що у нас є спосіб знайти гру:
                 List<Game> allGames = db.getAllGames();
                 for(Game g : allGames) {
                     if(g.getName().equalsIgnoreCase(gameNameFromIntent)) {
@@ -110,22 +110,21 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         }
 
-        // ЯКЩО ГРА ВЖЕ Є В БАЗІ -> Відкриваємо MyGameDetailsActivity і ЗАКРИВАЄМО цей екран
         if (existingGame != null) {
             Intent intent = new Intent(this, MyGameDetailsActivity.class);
             intent.putExtra("gameId", existingGame.getId());
             startActivity(intent);
-            finish(); // Важливо: закриваємо GameDetailsActivity, щоб користувач не міг повернутися сюди кнопкою "Назад"
-            return;   // Припиняємо виконання onCreate
+            finish();
+            return;
         }
 
-        // --- СТАРА ЛОГІКА (якщо гри немає в БД) ---
         setContentView(R.layout.activity_game_details);
         initViews();
         initRetrofit();
         setupButtons();
         loadGameDetails();
     }
+
     private void initViews() {
         mainImage = findViewById(R.id.detailsImage);
         title = findViewById(R.id.detailsTitle);
@@ -133,7 +132,6 @@ public class GameDetailsActivity extends AppCompatActivity {
         rating = findViewById(R.id.detailsRating);
         description = findViewById(R.id.detailsDescription);
         category = findViewById(R.id.detailsCategory);
-        //detailsHltb = findViewById(R.id.detailsHltb);
 
         genresChipGroup = findViewById(R.id.genresChipGroup);
         tagsChipGroup = findViewById(R.id.tagsChipGroup);
@@ -145,13 +143,19 @@ public class GameDetailsActivity extends AppCompatActivity {
         btnPlanned = findViewById(R.id.btnAddPlanned);
         btnPlaying = findViewById(R.id.btnAddPlaying);
         btnCompleted = findViewById(R.id.btnAddCompleted);
-        Button btnManageCols = findViewById(R.id.btnManageCollections);
-        btnOpenIgdb = findViewById(R.id.btnOpenIgdb); // Використовуємо існуючий ID кнопки
+        btnOpenIgdb = findViewById(R.id.btnOpenIgdb);
         detailsAggregatedRating = findViewById(R.id.detailsAggregatedRating);
         detailsStoryline = findViewById(R.id.detailsStoryline);
         storylineHeader = findViewById(R.id.storylineHeader);
         detailsGameCategory = findViewById(R.id.detailsGameCategory);
+
+        // Price UI Views
+        steamPriceContainer = findViewById(R.id.steamPriceContainer);
+        tvSteamDiscount = findViewById(R.id.tvSteamDiscount);
+        tvSteamOriginalPrice = findViewById(R.id.tvSteamOriginalPrice);
+        tvSteamFinalPrice = findViewById(R.id.tvSteamFinalPrice);
     }
+
     private void initRetrofit() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.igdb.com/")
@@ -160,62 +164,37 @@ public class GameDetailsActivity extends AppCompatActivity {
                 .build();
         igdbApi = retrofit.create(IgdbApiService.class);
     }
+
     private void setupButtons() {
         btnPlanned.setOnClickListener(v -> showPlannedBottomSheet());
         btnPlaying.setOnClickListener(v -> showPlayingBottomSheet());
         btnCompleted.setOnClickListener(v -> showCompletedBottomSheet());
 
-        // Ініціалізація кнопки копіювання
-//        View btnCopy = findViewById(R.id.btnCopyTitle);
-//        if (btnCopy != null) {
-//            btnCopy.setOnClickListener(v -> {
-//                String gameName = title.getText().toString();
-//                if (!gameName.isEmpty()) {
-//                    // Копіювання в буфер обміну
-//                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//                    android.content.ClipData clip = android.content.ClipData.newPlainText("Game Title", gameName);
-//                    clipboard.setPrimaryClip(clip);
-//
-//                    // Візуальне підтвердження для користувача
-//                    Toast.makeText(this, "Title copied to clipboard", Toast.LENGTH_SHORT).show();
-//
-//                    // Легка вібрація (опціонально)
-//                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-//                }
-//            });
-//        }
-
         btnOpenIgdb.setOnClickListener(v -> {
             if (game != null) {
                 String url = "";
-                String savedUrl = game.getIgdbUrl(); // Повне посилання з бази
-                String slug = game.getRawgSlug();     // Slug (текстовий ID)
+                String savedUrl = game.getIgdbUrl();
+                String slug = game.getRawgSlug();
 
-                // 1. Пріоритет №1: Якщо в базі вже лежить повне посилання
                 if (savedUrl != null && savedUrl.startsWith("http")) {
                     url = savedUrl;
-                }
-                // 2. Пріоритет №2: Якщо є slug, будуємо пряме посилання
-                else if (slug != null && !slug.isEmpty()) {
+                } else if (slug != null && !slug.isEmpty()) {
                     url = "https://www.igdb.com/games/" + slug;
-                }
-                // 3. Фолбек: Розумний пошук, якщо нічого не знайдено
-                else {
+                } else {
                     String cleanQuery = game.getName().replaceAll("[^a-zA-Z0-9 ]", " ");
                     url = "https://www.igdb.com/search?q=" + Uri.encode(cleanQuery);
                 }
 
-                // Відкриваємо зовнішній браузер
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(intent);
                 } catch (Exception e) {
-                    // На випадок, якщо на пристрої немає жодного браузера (малоймовірно)
                     Toast.makeText(this, "Неможливо відкрити посилання", Toast.LENGTH_SHORT).show();
                     Log.e("BROWSER_ERROR", "Error opening browser: " + e.getMessage());
                 }
             }
         });
+
         if (btnOpenSteam != null) {
             btnOpenSteam.setOnClickListener(v -> {
                 if (game != null && game.getSteamUrl() != null && !game.getSteamUrl().isEmpty()) {
@@ -224,10 +203,8 @@ public class GameDetailsActivity extends AppCompatActivity {
                 }
             });
         }
-        // 1. Встановлюємо СУЦІЛЬНИЙ колір статус-бара (як фон додатка)
-        getWindow().setStatusBarColor(Color.parseColor("#121212"));
 
-        // Якщо хочеш, щоб іконки годинника були білими (на темному фоні)
+        getWindow().setStatusBarColor(Color.parseColor("#121212"));
         getWindow().getDecorView().setSystemUiVisibility(0);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -243,42 +220,37 @@ public class GameDetailsActivity extends AppCompatActivity {
         AppBarLayout appBarLayout = findViewById(R.id.appBarLayout);
         appBarLayout.addOnOffsetChangedListener((appBarLayout1, verticalOffset) -> {
             if (Math.abs(verticalOffset) - appBarLayout1.getTotalScrollRange() == 0) {
-                // Повністю згорнуто
                 getSupportActionBar().setDisplayShowTitleEnabled(true);
                 toolbar.setTitle(game.getName());
             } else {
-                // Розгорнуто
                 getSupportActionBar().setDisplayShowTitleEnabled(false);
             }
         });
     }
+
     private void loadGameDetails() {
-        // 1. Спочатку перевіряємо, чи є ця гра вже в кеші
         Game cachedGame = GameCache.getInstance().getGame(gameId);
 
         if (cachedGame != null) {
-            // ГРА ЗНАЙДЕНА В КЕШІ!
-            // Відразу показуємо її, не роблячи жодного запиту в інтернет
             Log.d("CACHE_DEBUG", "Завантажено гру з кешу: " + cachedGame.getName());
             this.game = cachedGame;
 
-            // Запускаємо відображення
             displayGame(game);
             setupStoreButtons(game.getSteamUrl(), game.getPsUrl(), game.getXboxUrl(), game.getNintendoUrl());
-            // Визначаємо ID категорії для відображення
-            Integer catId = 0; // Для відображення значка (0 = Main Game)
+
+            Integer catId = 0;
             if (game.getGameCategory() != null && game.getGameCategory().contains("DLC")) catId = 1;
             updateCategoryBadge(catId, game.getName());
 
         } else {
-            // ГРИ В КЕШІ НЕМАЄ. Йдемо в IGDB
             Log.d("CACHE_DEBUG", "Гри немає в кеші. Завантажуємо з IGDB...");
             fetchIgdbTokenAndData();
         }
     }
+
     private void fetchIgdbTokenAndData() {
         igdbApi.getToken(CLIENT_ID, CLIENT_SECRET, "client_credentials")
-                .enqueue(new retrofit2.Callback<TokenResponse>() {
+                .enqueue(new Callback<TokenResponse>() {
                     @Override
                     public void onResponse(Call<TokenResponse> call, Response<TokenResponse> response) {
                         if (isFinishing() || isDestroyed()) return;
@@ -297,8 +269,8 @@ public class GameDetailsActivity extends AppCompatActivity {
                     }
                 });
     }
+
     private void fetchGameFromIgdb(String token) {
-        // 1. Поля запиту
         String fields = "fields name, summary, storyline, url, category, game_type, first_release_date, " +
                 "total_rating, aggregated_rating, cover.url, genres.name, themes.name, " +
                 "keywords.name, platforms.name, similar_games.name, similar_games.id, " +
@@ -307,20 +279,16 @@ public class GameDetailsActivity extends AppCompatActivity {
 
         if (gameId != -1) {
             String query = fields + "where id = " + gameId + ";";
-            Log.d("IGDB_STEP", "Запуск Deep Fetch за ID: " + gameId);
             executeDeepFetch(token, query);
         } else {
             String cleanName = gameNameFromIntent.replace("\"", "");
             String searchIdQuery = "fields id; search \"" + cleanName + "\"; limit 1;";
-
-            Log.d("IGDB_STEP", "Запуск Пошуку ID для: " + cleanName);
 
             igdbApi.getGames(CLIENT_ID, token, searchIdQuery).enqueue(new Callback<List<IgdbGame>>() {
                 @Override
                 public void onResponse(Call<List<IgdbGame>> call, Response<List<IgdbGame>> response) {
                     if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                         int realId = response.body().get(0).id;
-                        Log.d("IGDB_STEP", "ID знайдено: " + realId + ". Тепер вантажимо деталі.");
                         executeDeepFetch(token, fields + "where id = " + realId + ";");
                     } else {
                         Log.e("IGDB_STEP", "ID не знайдено через пошук.");
@@ -333,8 +301,8 @@ public class GameDetailsActivity extends AppCompatActivity {
             });
         }
     }
+
     private void fetchSeriesData(String token, int gameId) {
-        // Прямий запит до таблиці колекцій
         String query = "fields name, games.name, games.id; where games = (" + gameId + ");";
 
         igdbApi.getCollections(CLIENT_ID, token, query).enqueue(new Callback<List<IgdbGame.IgdbSeries>>() {
@@ -343,27 +311,22 @@ public class GameDetailsActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     IgdbGame.IgdbSeries foundSeries = response.body().get(0);
 
-                    // 1. Формуємо список ігор серії у форматі "назва|id"
                     List<String> sGames = new ArrayList<>();
                     if (foundSeries.games != null) {
                         for (IgdbGame.GameInCollection gc : foundSeries.games) {
-                            // Не додаємо саму цю гру в список її ж серії
                             if (gc.id != gameId) {
                                 sGames.add(gc.name + "|" + gc.id);
                             }
                         }
                     }
 
-                    // 2. Сетимо дані в об'єкт game
                     game.setCollection(foundSeries.name);
                     game.setSeriesGames(sGames);
 
                     if (game.getCategory() != null && !game.getCategory().isEmpty()) {
-                        new Thread(() -> {
-                            db.updateGame(game);
-                        }).start();
+                        new Thread(() -> db.updateGame(game)).start();
                     }
-                    // 4. Оновлюємо UI
+
                     runOnUiThread(() -> {
                         View btnSeries = findViewById(R.id.btnSeries);
                         TextView tvSeriesTitle = findViewById(R.id.tvSeriesTitle);
@@ -382,9 +345,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                             });
                         }
                     });
-                } else {
-                    Log.d("IGDB_SERIES", "Серію не знайдено через /collections");
-                    // Якщо серію не знайдено, можна спробувати аналогічний запит до /franchises
                 }
             }
 
@@ -394,36 +354,9 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         });
     }
-    // Допоміжний метод для завантаження ПОВНИХ даних
+
     private void executeDeepFetch(String token, String query) {
-        Log.d("IGDB_QUERY", "Final Body: " + query);
-
-        // 1. Отримуємо СИРИЙ ТЕКСТ відповіді (String)
-        igdbApi.getGamesRaw(CLIENT_ID, token, query).enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    // ДИВИСЬ ЦЕ В LOGCAT!
-                    Log.d("IGDB_RAW_JSON", "RAW RESPONSE: " + response.body());
-
-                    String raw = response.body();
-                    if (raw.contains("\"collection\":")) {
-                        Log.i("IGDB_DIAGNOSE", "УСПІХ: Поле collection є в JSON!");
-                    } else {
-                        Log.e("IGDB_DIAGNOSE", "ПОМИЛКА: Поле collection ВІДСУТНЄ в JSON. Перевір API або назву гри.");
-                    }
-
-                    if (raw.contains("\"franchises\":")) {
-                        Log.i("IGDB_DIAGNOSE", "УСПІХ: Поле franchises є в JSON!");
-                    }
-                }
-            }
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {}
-        });
-
-        // 2. Основний запит для об'єктів
-        igdbApi.getGames(CLIENT_ID, token, query).enqueue(new retrofit2.Callback<List<IgdbGame>>() {
+        igdbApi.getGames(CLIENT_ID, token, query).enqueue(new Callback<List<IgdbGame>>() {
             @Override
             public void onResponse(Call<List<IgdbGame>> call, Response<List<IgdbGame>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
@@ -436,28 +369,24 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         });
     }
+
     private void fetchTimeToBeatData(String token, int igdbId) {
         String query = "fields hastily, normally, completely; where game_id = " + igdbId + ";";
 
-        igdbApi.getTimeToBeat(CLIENT_ID, token, query).enqueue(new retrofit2.Callback<List<IgdbTimeToBeat>>() {
+        igdbApi.getTimeToBeat(CLIENT_ID, token, query).enqueue(new Callback<List<IgdbTimeToBeat>>() {
             @Override
             public void onResponse(Call<List<IgdbTimeToBeat>> call, Response<List<IgdbTimeToBeat>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     IgdbTimeToBeat ttb = response.body().get(0);
 
-                    // 1. Формуємо значення для кожного типу проходження
-                    // Якщо годин 0 — ставимо "-", якщо більше — число + "h"
                     String mainT = (ttb.hastily / 3600 > 0) ? (ttb.hastily / 3600) + "h" : "-";
                     String extraT = (ttb.normally / 3600 > 0) ? (ttb.normally / 3600) + "h" : "-";
                     String complT = (ttb.completely / 3600 > 0) ? (ttb.completely / 3600) + "h" : "-";
 
-                    // 2. Створюємо рядок для бази даних з розділювачем
                     String hltbResult = mainT + "|" + extraT + "|" + complT;
-
                     if (game != null) game.setHltb(hltbResult);
 
                     runOnUiThread(() -> {
-                        // 3. Знаходимо контейнер та окремі TextView
                         View container = findViewById(R.id.hltbContainer);
                         TextView tvMain = findViewById(R.id.tvHltbMain);
                         TextView tvExtras = findViewById(R.id.tvHltbExtras);
@@ -469,12 +398,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                             if (tvExtras != null) tvExtras.setText(extraT);
                             if (tvComplete != null) tvComplete.setText(complT);
                         }
-
-                        // Якщо ти все ще використовуєш старий одиночний TextView для тестів:
-                        if (detailsHltb != null) {
-                            detailsHltb.setText(mainT + " / " + extraT + " / " + complT);
-                            detailsHltb.setVisibility(View.VISIBLE);
-                        }
                     });
                 }
             }
@@ -485,6 +408,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         });
     }
+
     private void mapIgdbToGame(IgdbGame igdb, String token) {
         final int safeCategoryId = (igdb.category != null) ? igdb.category : 0;
         Game existingGame = db.getGameByIdObject(igdb.id);
@@ -501,8 +425,6 @@ public class GameDetailsActivity extends AppCompatActivity {
         String finalDescription = igdb.summary;
         String finalName = igdb.name;
         String finalStoryline = (igdb.storyline != null ? igdb.storyline : "");
-
-        // --- БЕЗПЕЧНИЙ розрахунок рейтингу користувачів ---
         Float finalRating = (float) (igdb.total_rating / 10.0f);
 
         if (existingGame != null) {
@@ -523,32 +445,26 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         }
 
-        // 1. Жанри
         List<String> genres = new ArrayList<>();
         if (igdb.genres != null) for (IgdbGame.Genre g : igdb.genres) genres.add(g.name);
 
-        // 2. Теги (Themes + Keywords)
         List<String> combinedTags = new ArrayList<>();
         if (igdb.themes != null) for (IgdbGame.Theme t : igdb.themes) combinedTags.add(t.name);
         if (igdb.keywords != null) for (IgdbGame.Keyword k : igdb.keywords) combinedTags.add(k.name);
 
-        // 3. Скріншоти
         List<String> screenshotUrls = new ArrayList<>();
         if (igdb.screenshots != null) {
             for (IgdbGame.Screenshot s : igdb.screenshots) screenshotUrls.add(getHighResUrl(s.url, "t_720p"));
         }
 
-        // 4. Платформи
         List<String> platforms = new ArrayList<>();
         if (igdb.platforms != null) for (IgdbGame.Platform p : igdb.platforms) platforms.add(p.name);
 
-        // 5. Схожі ігри
         List<String> similarWithIds = new ArrayList<>();
         if (igdb.similar_games != null) {
             for (IgdbGame.SimilarGame sg : igdb.similar_games) similarWithIds.add(sg.name + "|" + sg.id);
         }
 
-        // 6. Мови
         List<String> languages = new ArrayList<>();
         if (igdb.language_supports != null) {
             for (IgdbGame.LanguageSupport ls : igdb.language_supports) {
@@ -556,7 +472,6 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         }
 
-        // 7. Посилання на магазини
         String steamLink = "";
         String psLink = "";
         String xboxLink = "";
@@ -583,10 +498,8 @@ public class GameDetailsActivity extends AppCompatActivity {
             mainImageUrl = getHighResUrl(igdb.cover.url, "t_1080p");
         }
 
-        // Безпечна дата релізу
         long safeReleaseDate = igdb.first_release_date;
 
-        // 9. СТВОРЮЄМО ОБ'ЄКТ GAME (З безпечними null-перевірками)
         game = new Game(
                 igdb.id,
                 finalName,
@@ -604,7 +517,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                 similarWithIds,
                 "",
                 platforms,
-                // --- БЕЗПЕЧНИЙ розрахунок рейтингу критиків ---
                 finalRating = (float) (igdb.total_rating / 10.0f),
                 finalStoryline,
                 igdb.url,
@@ -614,21 +526,11 @@ public class GameDetailsActivity extends AppCompatActivity {
                 nintendoLink,
                 new ArrayList<>(),
                 mainImageUrl,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
+                null, null, null, null, null, null, null, null, null, null
         );
 
         game.setRawgSlug(igdb.slug);
 
-        // 10. ОНОВЛЕННЯ UI
         final String finalSteam = steamLink;
         final String finalPs = psLink;
         final String finalXbox = xboxLink;
@@ -647,6 +549,7 @@ public class GameDetailsActivity extends AppCompatActivity {
         fetchSeriesData(token, igdb.id);
         GameCache.getInstance().putGame(igdb.id, game);
     }
+
     private void setupStoreButtons(String steam, String ps, String xbox, String nintendo) {
         View btnSteam = findViewById(R.id.btnOpenSteam);
         View btnPs = findViewById(R.id.btnPlayStation);
@@ -670,55 +573,46 @@ public class GameDetailsActivity extends AppCompatActivity {
             button.setVisibility(View.GONE);
         }
     }
+
     private void updateCategoryBadge(Integer categoryId, String gameName) {
         if (detailsGameCategory == null) return;
 
         String name = getCategoryName(categoryId, gameName);
 
-        // Якщо назва категорії порожня (для Main Game) або null - ховаємо плашку
         if (name == null || name.isEmpty()) {
             detailsGameCategory.setVisibility(View.GONE);
         } else {
             detailsGameCategory.setText(name);
             detailsGameCategory.setVisibility(View.VISIBLE);
 
-            // Якщо це бандл або спец. видання - синій колір, якщо DLC - золотий
             if (name.contains("Bundle") || name.contains("Edition")) {
-                detailsGameCategory.setTextColor(Color.parseColor("#2D5E85")); // Синій
+                detailsGameCategory.setTextColor(Color.parseColor("#2D5E85"));
             } else {
-                detailsGameCategory.setTextColor(Color.parseColor("#FFD700")); // Золотий
+                detailsGameCategory.setTextColor(Color.parseColor("#FFD700"));
             }
         }
     }
+
     private String formatReleaseDate(long seconds) {
-        if (seconds <= 0) {
-            return "TBA"; // To Be Announced (якщо дати немає)
-        }
+        if (seconds <= 0) return "TBA";
 
         try {
-            // Конвертуємо секунди в мілісекунди
             Date date = new Date(seconds * 1000L);
-
-            // Встановлюємо формат (можна змінити на "dd MMM yyyy")
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
             return sdf.format(date);
         } catch (Exception e) {
             return "Unknown";
         }
     }
-    // Допоміжний метод для категорій
+
     private String getCategoryName(Integer catId, String gameName) {
         if (catId == null) return "";
 
-        // Якщо IGDB каже, що це "Main Game" (0), але в назві є "Bundle" або "Edition"
         if (catId == 0 && gameName != null) {
             String name = gameName.toLowerCase();
             if (name.contains("bundle") || name.contains("collection")) return "Bundle";
             if (name.contains("edition") || name.contains("version")) return "Special Edition";
             if (name.contains("expansion") || name.contains("dlc")) return "Expansion";
-
-            // Якщо це просто основна гра - повертаємо порожньо, щоб сховати плашку
             return "";
         }
 
@@ -738,15 +632,14 @@ public class GameDetailsActivity extends AppCompatActivity {
             default: return "";
         }
     }
+
     private void displayGame(Game g) {
         if (g == null) return;
 
-        // 1. Основна інформація
         title.setText(g.getName());
         rating.setText(String.format(Locale.getDefault(), "%.1f", g.getRating()));
         released.setText(g.getReleased());
 
-        // 2. Статус (Playing/Planned/Played)
         String cat = db.getCategoryByGameName(g.getName());
         category.setText(cat != null ? cat : "Not tracked");
 
@@ -756,19 +649,16 @@ public class GameDetailsActivity extends AppCompatActivity {
                 detailsGameCategory.setText(type);
                 detailsGameCategory.setVisibility(View.VISIBLE);
 
-                // Стиль: якщо це не основна гра, можна виділити іншим кольором
                 if (!type.equals("Main Game")) {
-                    detailsGameCategory.setTextColor(Color.parseColor("#FFD700")); // Золотий для DLC/Remake
+                    detailsGameCategory.setTextColor(Color.parseColor("#FFD700"));
                 } else {
-                    detailsGameCategory.setTextColor(Color.parseColor("#58A870")); // Зелений для Main
+                    detailsGameCategory.setTextColor(Color.parseColor("#58A870"));
                 }
             } else {
                 detailsGameCategory.setVisibility(View.GONE);
             }
         }
 
-        String currentStatus = db.getCategoryByGameName(g.getName());
-        // 3. Рейтинг критиків
         TextView criticsRating = findViewById(R.id.detailsAggregatedRating);
         if (g.getAggregatedRating() > 0) {
             criticsRating.setText(String.format(Locale.getDefault(), "%.1f", g.getAggregatedRating()));
@@ -776,21 +666,28 @@ public class GameDetailsActivity extends AppCompatActivity {
             criticsRating.setText("N/A");
         }
 
-        // 4. Жанри та Теги (Chips)
+        // FETCH STEAM PRICE
+        if (g.getSteamUrl() != null && !g.getSteamUrl().isEmpty()) {
+            String appId = extractSteamAppId(g.getSteamUrl());
+            if (appId != null) {
+                fetchSteamPrice(appId);
+            } else if (steamPriceContainer != null) {
+                steamPriceContainer.setVisibility(View.GONE);
+            }
+        } else if (steamPriceContainer != null) {
+            steamPriceContainer.setVisibility(View.GONE);
+        }
+
         addChipsToGroup(genresChipGroup, g.getGenres());
         if (g.getTags() != null && !g.getTags().isEmpty()) {
             addExpandableChips(tagsChipGroup, g.getTags(), 0);
         }
 
-// --- ПЛАТФОРМИ ---
         if (g.getPlatforms() != null && !g.getPlatforms().isEmpty()) {
-            // Використовуємо глобальну змінну platformsChipGroup і тип 4
             addExpandableChips(platformsChipGroup, g.getPlatforms(), 4);
         }
 
-// --- МОВИ ---
         if (g.getLanguages() != null && !g.getLanguages().isEmpty()) {
-            // Використовуємо глобальну змінну languagesChipGroup і тип 3
             addExpandableChips(languagesChipGroup, g.getLanguages(), 3);
         }
 
@@ -799,11 +696,9 @@ public class GameDetailsActivity extends AppCompatActivity {
             description.setVisibility(View.VISIBLE);
             description.setText(g.getDescription());
 
-            // Встановлюємо обмеження в 4 рядки
             description.setMaxLines(isSummaryLineExpanded ? Integer.MAX_VALUE : 4);
             description.setEllipsize(android.text.TextUtils.TruncateAt.END);
 
-            // Логіка показу підказки "Read more"
             description.post(() -> {
                 if (description.getLineCount() >= 4) {
                     tvSummaryClickHint.setVisibility(View.VISIBLE);
@@ -825,18 +720,16 @@ public class GameDetailsActivity extends AppCompatActivity {
             description.setVisibility(View.GONE);
             tvSummaryClickHint.setVisibility(View.GONE);
         }
-// --- STORYLINE (Сюжет) ---
+
         TextView tvStorylineHint = findViewById(R.id.tvStorylineClickHint);
         if (g.getStoryline() != null && !g.getStoryline().isEmpty()) {
             storylineHeader.setVisibility(View.VISIBLE);
             detailsStoryline.setVisibility(View.VISIBLE);
             detailsStoryline.setText(g.getStoryline());
 
-            // Встановлюємо обмеження в 4 рядки
             detailsStoryline.setMaxLines(isStorylineExpanded ? Integer.MAX_VALUE : 4);
             detailsStoryline.setEllipsize(android.text.TextUtils.TruncateAt.END);
 
-            // Логіка показу підказки "Read more"
             detailsStoryline.post(() -> {
                 if (detailsStoryline.getLineCount() >= 4) {
                     tvStorylineHint.setVisibility(View.VISIBLE);
@@ -860,47 +753,31 @@ public class GameDetailsActivity extends AppCompatActivity {
             tvStorylineHint.setVisibility(View.GONE);
         }
 
-        // 1. Знаходимо наш новий клікабельний рядок
         View btnSimilarGames = findViewById(R.id.btnSimilarGames);
 
         if (btnSimilarGames != null) {
-            // Перевіряємо, чи є в базі/об'єкті схожі ігри
             if (g.getSimilarGames() != null && !g.getSimilarGames().isEmpty()) {
-
-                // Показуємо кнопку
                 btnSimilarGames.setVisibility(View.VISIBLE);
-
-                // Налаштовуємо клік
                 btnSimilarGames.setOnClickListener(v -> {
                     Intent intent = new Intent(this, SimilarGamesActivity.class);
-
-                    // Передаємо ID поточної гри, щоб SimilarGamesActivity знала, що шукати
                     intent.putExtra("GAME_ID", g.getId());
-
-                    // Передаємо назву для заголовка в тулбарі
                     intent.putExtra("GAME_NAME", g.getName());
-
                     startActivity(intent);
                 });
-
             } else {
-                // Ховаємо кнопку, якщо схожих ігор немає
                 btnSimilarGames.setVisibility(View.GONE);
             }
         }
 
         loadMainImage();
 
-        // Скріншоти (Гібридна логіка: тільки URL)
         if (g.getScreenshots() != null && !g.getScreenshots().isEmpty()) {
             ScreenshotsAdapter adapter = new ScreenshotsAdapter(this, g.getScreenshots());
             screenshotsViewPager.setAdapter(adapter);
             screenshotsViewPager.setOffscreenPageLimit(3);
         }
 
-// 11. HLTB (Час проходження)
         if (g.getHltb() != null && !g.getHltb().isEmpty()) {
-            // Перевіряємо, чи це новий формат з розділювачами (наприклад "10h|15h|20h")
             if (g.getHltb().contains("|")) {
                 String[] parts = g.getHltb().split("\\|");
                 View container = findViewById(R.id.hltbContainer);
@@ -910,24 +787,103 @@ public class GameDetailsActivity extends AppCompatActivity {
                     ((TextView) findViewById(R.id.tvHltbExtras)).setText(parts[1]);
                     ((TextView) findViewById(R.id.tvHltbComplete)).setText(parts[2]);
                 }
-            } else {
-                // Якщо це старий формат (простий текст), а старий TextView все ще є
-                if (detailsHltb != null) {
-                    detailsHltb.setText(g.getHltb());
-                    detailsHltb.setVisibility(View.VISIBLE);
-                }
             }
         }
     }
+
+    private String extractSteamAppId(String url) {
+        if (url == null || !url.contains("steampowered.com/app/")) return null;
+        try {
+            String[] parts = url.split("/app/");
+            if (parts.length > 1) {
+                return parts[1].split("/")[0];
+            }
+        } catch (Exception e) {
+            Log.e("STEAM_PRICE", "Error extracting AppID", e);
+        }
+        return null;
+    }
+
+    private void fetchSteamPrice(String appId) {
+        Retrofit steamRetrofit = new Retrofit.Builder()
+                .baseUrl("https://store.steampowered.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        SteamStoreApiService api = steamRetrofit.create(SteamStoreApiService.class);
+
+        android.content.SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
+        String countryCode = prefs.getString("steam_country_code", java.util.Locale.getDefault().getCountry()).toLowerCase();
+        if (countryCode.isEmpty()) countryCode = "us";
+
+        api.getGamePrice(appId, countryCode).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        JsonObject root = response.body();
+                        JsonObject gameDataNode = root.getAsJsonObject(appId);
+
+                        if (gameDataNode != null && gameDataNode.get("success").getAsBoolean()) {
+                            JsonObject data = gameDataNode.getAsJsonObject("data");
+
+                            if (data.has("price_overview")) {
+                                JsonObject price = data.getAsJsonObject("price_overview");
+                                int discount = price.get("discount_percent").getAsInt();
+                                String initialPrice = price.get("initial_formatted").getAsString();
+                                String finalPrice = price.get("final_formatted").getAsString();
+
+                                runOnUiThread(() -> {
+                                    if (steamPriceContainer != null) {
+                                        steamPriceContainer.setVisibility(View.VISIBLE);
+                                        if (discount > 0) {
+                                            tvSteamDiscount.setVisibility(View.VISIBLE);
+                                            tvSteamOriginalPrice.setVisibility(View.VISIBLE);
+
+                                            tvSteamDiscount.setText("-" + discount + "%");
+                                            tvSteamOriginalPrice.setText(initialPrice);
+                                            tvSteamFinalPrice.setText(finalPrice);
+
+                                            tvSteamOriginalPrice.setPaintFlags(tvSteamOriginalPrice.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                                        } else {
+                                            tvSteamDiscount.setVisibility(View.GONE);
+                                            tvSteamOriginalPrice.setVisibility(View.GONE);
+                                            tvSteamFinalPrice.setText(finalPrice);
+                                        }
+                                    }
+                                });
+                            } else if (data.has("is_free") && data.get("is_free").getAsBoolean()) {
+                                runOnUiThread(() -> {
+                                    if (steamPriceContainer != null) {
+                                        steamPriceContainer.setVisibility(View.VISIBLE);
+                                        tvSteamDiscount.setVisibility(View.GONE);
+                                        tvSteamOriginalPrice.setVisibility(View.GONE);
+                                        tvSteamFinalPrice.setText("Free to Play");
+                                        tvSteamFinalPrice.setTextColor(Color.parseColor("#58A870"));
+                                    }
+                                });
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e("STEAM_PRICE", "JSON Parsing error", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                Log.e("STEAM_PRICE", "Network error fetching price", t);
+            }
+        });
+    }
+
     private void showCollectionSelector() {
-        // 1. Отримуємо всі створені користувачем колекції
         List<GameCollection> allCollections = db.getAllCollections();
         if (allCollections.isEmpty()) {
             Toast.makeText(this, "Create a collection in the Menu first!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // 2. Отримуємо ID колекцій, де ця гра вже є
         List<Integer> currentIds = db.getCollectionIdsForGame(game.getId());
 
         String[] names = new String[allCollections.size()];
@@ -940,7 +896,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             }
         }
         int Color = android.graphics.Color.parseColor("#58A870");
-        // 3. Показуємо діалог
+
         AlertDialog dialog = new AlertDialog.Builder(this, R.style.MyDialogTheme)
                 .setTitle("Add to Collections")
                 .setMultiChoiceItems(names, checked, (d, which, isChecked) -> {
@@ -953,33 +909,28 @@ public class GameDetailsActivity extends AppCompatActivity {
                 })
                 .setPositiveButton("Done", null)
                 .setNegativeButton("Cancel", null)
-                .create(); // Використовуємо .create() замість .show() відразу
+                .create();
 
         dialog.show();
 
-        // Встановлюємо БІЛИЙ колір для кнопок після того, як діалог з'явився
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color);
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color);
     }
+
     private void loadMainImage() {
         if (isFinishing() || isDestroyed()) return;
 
         String localPath = game.getImagePath();
-        String remoteUrl = game.getImageUrl(); // Наше нове поле
+        String remoteUrl = game.getImageUrl();
 
-        // 1. Перевіряємо, чи є локальний шлях і чи існує файл фізично
         if (localPath != null && !localPath.startsWith("http")) {
             File file = new File(localPath);
             if (file.exists()) {
-                // ВСЕ ДОБРЕ: файл є, вантажимо з диска
                 Glide.with(this).load(file).centerCrop().into(mainImage);
                 return;
             }
         }
 
-        // 2. Якщо ми тут, значить: або це нова гра (шлях http),
-        // або файл був видалений (після Restore).
-        // Вантажимо за посиланням (remoteUrl або localPath якщо він http)
         String urlToLoad = (remoteUrl != null && !remoteUrl.isEmpty()) ? remoteUrl : localPath;
 
         if (urlToLoad != null && urlToLoad.startsWith("http")) {
@@ -990,8 +941,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                     .centerCrop()
                     .into(mainImage);
 
-            // 3. АВТОВІДНОВЛЕННЯ: якщо ми в MyGameDetails (гра вже в базі),
-            // запускаємо фонове скачування, щоб наступного разу було офлайн
             if (this instanceof GameDetailsActivity) {
                 downloadImageToInternalStorage(highRes);
             }
@@ -999,26 +948,18 @@ public class GameDetailsActivity extends AppCompatActivity {
             mainImage.setImageResource(R.drawable.placeholder);
         }
     }
-    private void downloadImageToInternalStorage(String imageUrl) {
-        // Робимо це в новому потоці, щоб не блокувати UI
-        new Thread(() -> {
-            Log.d("OFFLINE_SAVE", "Початок фонового завантаження головного фото...");
 
-            // Використовуємо ваш існуючий метод стиснення (він поверне шлях до .webp файлу)
+    private void downloadImageToInternalStorage(String imageUrl) {
+        new Thread(() -> {
             String localPath = downloadAndCompressImageWithBackoff(imageUrl);
 
             if (localPath != null && game != null) {
-                // Оновлюємо шлях в об'єкті гри
                 game.setImagePath(localPath);
-
-                // ЗАПИСУЄМО НОВИЙ ШЛЯХ В БАЗУ ДАНИХ
-                // Тепер при наступному відкритті path.startsWith("http") буде false
                 db.updateGame(game);
-
-                Log.d("OFFLINE_SAVE", "Головне фото успішно збережено локально: " + localPath);
             }
         }).start();
     }
+
     private void addChipsToGroup(ChipGroup group, List<String> items) {
         if (group == null) return;
         group.removeAllViews();
@@ -1028,7 +969,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             Chip chip = new Chip(this);
             chip.setText(item);
             chip.setChipBackgroundColorResource(android.R.color.transparent);
-            chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(Color.parseColor("#58A870")));
+            chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor("#58A870")));
             chip.setChipStrokeWidth(2f);
             chip.setEnsureMinTouchTargetSize(false);
             chip.setChipMinHeight(0f);
@@ -1036,6 +977,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             group.addView(chip);
         }
     }
+
     private void addExpandableChips(ChipGroup group, List<String> items, int type) {
         if (group == null) return;
         if (items == null || items.isEmpty()) {
@@ -1045,7 +987,6 @@ public class GameDetailsActivity extends AppCompatActivity {
         group.setVisibility(View.VISIBLE);
         group.removeAllViews();
 
-        // Визначаємо стан розгортання
         boolean isExpanded;
         if (type == 0) isExpanded = isTagsExpanded;
         else if (type == 1) isExpanded = isSimilarExpanded;
@@ -1063,7 +1004,6 @@ public class GameDetailsActivity extends AppCompatActivity {
             chip.setChipBackgroundColorResource(android.R.color.transparent);
 
             if (type == 1 || type == 2) {
-                // Стиль для ігор (Зелений + Іконка)
                 String[] parts = rawItem.split("\\|");
                 if (parts.length < 2) continue;
                 chip.setText(parts[0]);
@@ -1078,13 +1018,11 @@ public class GameDetailsActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
             } else if (type == 0) {
-                // Стиль для тегів (Сірий)
                 chip.setText(rawItem);
                 chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor("#444444")));
                 chip.setChipStrokeWidth(1f);
                 chip.setTextColor(Color.LTGRAY);
             } else {
-                // Стиль для Платформ (4) та Мов (3)
                 chip.setText(rawItem);
                 chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor("#58A870")));
                 chip.setChipStrokeWidth(2f);
@@ -1092,7 +1030,6 @@ public class GameDetailsActivity extends AppCompatActivity {
             group.addView(chip);
         }
 
-        // Кнопка перемикання
         if (items.size() > CHIPS_LIMIT + 1) {
             Chip toggleChip = new Chip(this);
             toggleChip.setText(isExpanded ? "Show less" : "+ " + (items.size() - CHIPS_LIMIT) + " more");
@@ -1108,77 +1045,12 @@ public class GameDetailsActivity extends AppCompatActivity {
                 else if (type == 2) isSeriesExpanded = !isSeriesExpanded;
                 else if (type == 3) isLanguagesExpanded = !isLanguagesExpanded;
                 else if (type == 4) isPlatformsExpanded = !isPlatformsExpanded;
-                addExpandableChips(group, items, type); // Оновлюємо
+                addExpandableChips(group, items, type);
             });
             group.addView(toggleChip);
         }
     }
-    // Надійний і простий клас для розстановки крапок у даті (dd.MM.yyyy)
-    private class SimpleDateWatcher implements android.text.TextWatcher {
-        private String current = "";
-        private android.widget.EditText input;
 
-        public SimpleDateWatcher(android.widget.EditText input) {
-            this.input = input;
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if (s.toString().equals(current)) {
-                return;
-            }
-
-            // Видаляємо все, крім цифр
-            String clean = s.toString().replaceAll("[^\\d]", "");
-            String cleanC = current.replaceAll("[^\\d]", "");
-
-            int cl = clean.length();
-            int sel = cl;
-            for (int i = 2; i <= cl && i < 6; i += 2) {
-                sel++;
-            }
-            // Виправлення курсору при видаленні
-            if (clean.equals(cleanC)) sel--;
-
-            // Якщо цифр менше 8 - просто форматуємо те, що є
-            if (clean.length() < 8) {
-                String formatted = "";
-                for (int i = 0; i < clean.length(); i++) {
-                    if (i == 2 || i == 4) {
-                        formatted += ".";
-                    }
-                    formatted += clean.charAt(i);
-                }
-                clean = formatted;
-            } else {
-                // Якщо введено всі 8 цифр, формуємо повну дату і перевіряємо валідність
-                int day = Integer.parseInt(clean.substring(0, 2));
-                int mon = Integer.parseInt(clean.substring(2, 4));
-                int year = Integer.parseInt(clean.substring(4, 8));
-
-                mon = mon < 1 ? 1 : Math.min(mon, 12);
-                year = (year < 1900) ? 1900 : Math.min(year, 2100);
-
-                // Перевірка кількості днів у місяці
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(java.util.Calendar.MONTH, mon - 1);
-                cal.set(java.util.Calendar.YEAR, year);
-                day = Math.min(day, cal.getActualMaximum(java.util.Calendar.DATE));
-
-                clean = String.format(Locale.getDefault(), "%02d.%02d.%04d", day, mon, year);
-            }
-
-            current = clean;
-            input.setText(current);
-            input.setSelection(Math.min(sel, current.length())); // Курсор в кінець
-        }
-
-        @Override
-        public void afterTextChanged(android.text.Editable s) {}
-    }
     private void showCompletedBottomSheet() {
         com.google.android.material.bottomsheet.BottomSheetDialog sheet =
                 new com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme);
@@ -1207,7 +1079,6 @@ public class GameDetailsActivity extends AppCompatActivity {
         String today = sdf.format(new Date());
         etEnd.setText(today);
 
-        // Календар для Start Date
         etStart.setOnClickListener(v -> {
             final java.util.Calendar c = java.util.Calendar.getInstance();
             try {
@@ -1219,7 +1090,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                     c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH)).show();
         });
 
-        // Календар для End Date
         etEnd.setOnClickListener(v -> {
             final java.util.Calendar c = java.util.Calendar.getInstance();
             try {
@@ -1231,7 +1101,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                     c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH)).show();
         });
 
-        // Оцінки
         String[] ratingValues = {"None", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
         final float[] selectedRating = {0f};
         List<TextView> ratingViews = new ArrayList<>();
@@ -1291,7 +1160,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                 } catch (Exception e) { return; }
             }
 
-            // Перетворюємо дані у потрібні типи для бази
             Integer userRatingInt = selectedRating[0] > 0 ? Math.round(selectedRating[0]) : null;
 
             Float timeInt = null;
@@ -1311,7 +1179,6 @@ public class GameDetailsActivity extends AppCompatActivity {
 
             sheet.dismiss();
 
-            // Зберігаємо в Completed
             saveGameToCategory("completed", userRatingInt, startD, endD, null, null,
                     reviewText.isEmpty() ? null : reviewText, null, type, playsInt, timeInt);
         });
@@ -1319,6 +1186,7 @@ public class GameDetailsActivity extends AppCompatActivity {
         sheet.setContentView(view);
         sheet.show();
     }
+
     private void showPlannedBottomSheet() {
         com.google.android.material.bottomsheet.BottomSheetDialog sheet =
                 new com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme);
@@ -1327,7 +1195,6 @@ public class GameDetailsActivity extends AppCompatActivity {
         LinearLayout llRatingContainer = view.findViewById(R.id.PriorityContainer);
         Button btnSave = view.findViewById(R.id.btnSavePlannedGames);
 
-        // Пріоритети (1-10)
         String[] ratingValues = {"None", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
         final float[] selectedRating = {0f};
         List<TextView> ratingViews = new ArrayList<>();
@@ -1348,7 +1215,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             unselectedBg.setColor(Color.parseColor("#262626"));
             android.graphics.drawable.GradientDrawable selectedBg = new android.graphics.drawable.GradientDrawable();
             selectedBg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-            selectedBg.setColor(Color.parseColor("#2D5E85")); // Синій
+            selectedBg.setColor(Color.parseColor("#2D5E85"));
             if (i == 0) {
                 tv.setBackground(selectedBg);
                 tv.setTextColor(Color.BLACK);
@@ -1376,7 +1243,6 @@ public class GameDetailsActivity extends AppCompatActivity {
 
             sheet.dismiss();
 
-            // Зберігаємо в Planned
             saveGameToCategory("planned", null, null, null, today, null,
                     null, priorityInt, null, null, null);
         });
@@ -1384,6 +1250,7 @@ public class GameDetailsActivity extends AppCompatActivity {
         sheet.setContentView(view);
         sheet.show();
     }
+
     private void showPlayingBottomSheet() {
         com.google.android.material.bottomsheet.BottomSheetDialog sheet =
                 new com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme);
@@ -1415,7 +1282,6 @@ public class GameDetailsActivity extends AppCompatActivity {
 
             sheet.dismiss();
 
-            // Зберігаємо в Playing
             saveGameToCategory("playing", null, null, null, null, startDate,
                     null, null, null, null, null);
         });
@@ -1423,6 +1289,7 @@ public class GameDetailsActivity extends AppCompatActivity {
         sheet.setContentView(view);
         sheet.show();
     }
+
     private void saveGameToCategory(
             String catName,
             Integer userRating,
@@ -1442,10 +1309,7 @@ public class GameDetailsActivity extends AppCompatActivity {
         btnPlaying.setEnabled(false);
         btnCompleted.setEnabled(false);
 
-        // Опис тепер залишається чистим і оригінальним!
         String finalDesc = game.getDescription() != null ? game.getDescription() : "";
-
-        // Встановлюємо оцінку користувача як основний рейтинг, якщо вона вказана
         final float finalRating = (userRating != null && userRating > 0) ? (float) userRating : game.getRating();
 
         new Thread(() -> {
@@ -1454,7 +1318,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                 localImagePath = downloadAndCompressImageWithBackoff(localImagePath);
             }
 
-            // Виклик твого нового конструктора
             Game finalGame = new Game(
                     game.getId(),
                     game.getName(),
@@ -1481,7 +1344,6 @@ public class GameDetailsActivity extends AppCompatActivity {
                     game.getNintendoUrl(),
                     game.getSeriesGames(),
                     mainImageUrl,
-                    // --- ТВОЇ НОВІ ПОЛЯ ---
                     userRating,
                     dateStartCompleted,
                     dateEndCompleted,
@@ -1515,6 +1377,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             });
         }).start();
     }
+
     private String downloadAndCompressImageWithBackoff(String imageUrl) {
         File dir = new File(getFilesDir(), "game_images");
         if (!dir.exists()) dir.mkdirs();
@@ -1536,11 +1399,13 @@ public class GameDetailsActivity extends AppCompatActivity {
         }
         return null;
     }
+
     private String getHighResUrl(String url, String sizeTag) {
         if (url == null || url.isEmpty()) return null;
         if (url.startsWith("//")) url = "https:" + url;
         return url.replaceAll("t_\\w+", sizeTag);
     }
+
     private void showToast(String message) {
         runOnUiThread(() -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show());
     }
