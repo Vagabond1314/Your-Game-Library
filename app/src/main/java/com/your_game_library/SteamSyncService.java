@@ -70,16 +70,13 @@ public class SteamSyncService extends Service {
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, getNotification("Connecting to IGDB...", 0, selectedGames.size()));
 
-        // Починаємо фонову роботу
         new Thread(() -> {
             try {
-                // 1. Отримуємо токен
                 retrofit2.Call<TokenResponse> call = igdbApi.getToken(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, "client_credentials");
-                retrofit2.Response<TokenResponse> response = call.execute(); // Синхронний виклик (бо ми вже у фоні)
+                retrofit2.Response<TokenResponse> response = call.execute();
 
                 if (response.isSuccessful() && response.body() != null) {
                     igdbToken = "Bearer " + response.body().access_token;
-                    // 2. Починаємо обробку ігор
                     processGames(selectedGames);
                 } else {
                     updateNotification("Error: IGDB Auth Failed", 0, 0);
@@ -111,7 +108,6 @@ public class SteamSyncService extends Service {
                 lastPlayedDate = sdf.format(new Date(sg.rtime_last_played * 1000L));
             }
 
-            // Перевірка на дублікат (Локально)
             Game existingGame = null;
             for (Game dbG : allDbGames) {
                 if (dbG.getName() != null && dbG.getName().equalsIgnoreCase(sg.name)) {
@@ -121,10 +117,8 @@ public class SteamSyncService extends Service {
             }
 
             if (existingGame != null) {
-                // ГРА ВЖЕ Є: Оновлюємо години і дати, категорію НЕ МІНЯЄМО
                 if (hoursPlayed > 0) existingGame.setTime(hoursPlayed);
 
-                // Якщо є дата, пишемо її в ту категорію, де зараз знаходиться гра
                 if (lastPlayedDate != null) {
                     if (existingGame.getCategory().equalsIgnoreCase("completed")) {
                         existingGame.setDateEndCompleted(lastPlayedDate);
@@ -134,58 +128,45 @@ public class SteamSyncService extends Service {
                 }
                 dbHelper.updateGame(existingGame);
             } else {
-                // ГРИ НЕМАЄ: Йдемо на IGDB
-                fetchAndSaveNewGame(sg.name, hoursPlayed, lastPlayedDate, today);
+                fetchAndSaveNewGame(sg, hoursPlayed, lastPlayedDate, today);
             }
 
-            // Затримка для обходу лімітів IGDB (4 запити на секунду макс)
             try { Thread.sleep(300); } catch (InterruptedException e) {}
         }
 
-        // Завершення: Міняємо текст і ховаємо прогрес
         notificationBuilder.setContentTitle("Steam Sync Complete!")
                 .setContentText("Added/Updated " + games.size() + " games.")
                 .setProgress(0, 0, false);
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
 
-        // Зупиняємо сервіс
         stopForeground(false);
         stopSelf();
     }
 
-    private void fetchAndSaveNewGame(String gameName, Float hoursPlayed, String lastPlayedDate, String today) {
-        // Замінюємо спецсимволи на ПРОБІЛИ, а потім видаляємо зайві пробіли
-        String cleanName = gameName.replaceAll("[^a-zA-Z0-9 ]", " ").trim().replaceAll(" +", " ");
-        Log.d("STEAM_SYNC_DEBUG", "--------------------------------------------------");
-        Log.d("STEAM_SYNC_DEBUG", "1. Спроба знайти нову гру на IGDB: [" + gameName + "]");
+    private void fetchAndSaveNewGame(SteamResponse.SteamGame sg, Float hoursPlayed, String lastPlayedDate, String today) {
+        String cleanName = sg.name.replaceAll("[^a-zA-Z0-9 ]", " ").trim().replaceAll(" +", " ");
+        String steamVerticalCover = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + sg.appid + "/library_600x900.jpg";
 
         String query = "fields name, summary, cover.url, genres.name, platforms.name, aggregated_rating; search \"" + cleanName + "\"; limit 5;";
-        Log.d("STEAM_SYNC_DEBUG", "2. Запит до IGDB: " + query);
 
         try {
             Response<List<IgdbGame>> response = igdbApi.getGames(IGDB_CLIENT_ID, igdbToken, query).execute();
 
             if (response.isSuccessful() && response.body() != null) {
-                Log.d("STEAM_SYNC_DEBUG", "3. Відповідь IGDB успішна. Знайдено результатів: " + response.body().size());
-
-                IgdbGame igdb = findBestMatch(response.body(), gameName);
+                IgdbGame igdb = findBestMatch(response.body(), sg.name);
 
                 if (igdb != null) {
-                    Log.d("STEAM_SYNC_DEBUG", "4. Найкращий збіг знайдено! Назва з IGDB: [" + igdb.name + "]");
-
-                    // Перевіряємо дублікат ще раз (можливо під іншою назвою IGDB)
                     Game doubleCheckGame = dbHelper.getGameByName(igdb.name);
                     if (doubleCheckGame != null) {
-                        Log.d("STEAM_SYNC_DEBUG", "5. СТОП! Гра [" + igdb.name + "] вже є в базі. Оновлюємо години.");
                         if (hoursPlayed > 0) doubleCheckGame.setTime(hoursPlayed);
                         dbHelper.updateGame(doubleCheckGame);
                         return;
                     }
 
-                    // --- БЕЗПЕЧНЕ ЧИТАННЯ ДАНИХ З IGDB ---
-                    String coverUrl = "";
+                    // Use IGDB vertical cover, or fallback to Steam vertical cover
+                    String coverUrl = steamVerticalCover;
                     if (igdb.cover != null && igdb.cover.url != null) {
-                        coverUrl = igdb.cover.url.replace("t_thumb", "t_1080p").replace("//", "https://");
+                        coverUrl = igdb.cover.url.replace("t_thumb", "t_cover_big").replace("//", "https://");
                     }
 
                     List<String> genres = new ArrayList<>();
@@ -201,13 +182,10 @@ public class SteamSyncService extends Service {
                     Float rating = (float) (igdb.aggregated_rating / 10.0);
                     String summary = (igdb.summary != null) ? igdb.summary : "";
 
-                    // Якщо 0 годин -> Planned, якщо грав -> Completed
                     String targetCategory = (hoursPlayed > 0) ? "completed" : "planned";
                     Float finalTime = (hoursPlayed > 0) ? hoursPlayed : null;
                     String finalEndDate = (hoursPlayed > 0) ? lastPlayedDate : null;
                     String finalAddedDate = (hoursPlayed == 0) ? today : null;
-
-                    Log.d("STEAM_SYNC_DEBUG", "6. Формуємо об'єкт для БД. Category: " + targetCategory + " | Hours: " + finalTime);
 
                     Game newGame = new Game(
                             0, igdb.name, targetCategory, summary, rating, coverUrl,
@@ -217,55 +195,37 @@ public class SteamSyncService extends Service {
                             null, null, finalEndDate, finalAddedDate, null, null, null, "Steam Import", 1, finalTime
                     );
 
-                    long dbId = dbHelper.addGame(newGame);
-                    if (dbId != -1) {
-                        Log.d("STEAM_SYNC_DEBUG", "7. УСПІХ! Гра [" + igdb.name + "] додана в БД з ID: " + dbId);
-                    } else {
-                        Log.e("STEAM_SYNC_DEBUG", "7. ПОМИЛКА SQLITE! dbHelper.addGame повернув -1 для [" + igdb.name + "]");
-                    }
+                    dbHelper.addGame(newGame);
                 } else {
-                    Log.w("STEAM_SYNC_DEBUG", "4. IGDB не знайшов точного збігу для [" + gameName + "]. Запускаємо ФОЛБЕК.");
-                    saveGameAsFallback(gameName, hoursPlayed, lastPlayedDate, today);
+                    saveGameAsFallback(sg, hoursPlayed, lastPlayedDate, today);
                 }
             } else {
-                Log.e("STEAM_SYNC_DEBUG", "3. Помилка відповіді IGDB: " + response.code() + " | Звертаємось до фолбеку.");
-                saveGameAsFallback(gameName, hoursPlayed, lastPlayedDate, today);
+                saveGameAsFallback(sg, hoursPlayed, lastPlayedDate, today);
             }
         } catch (Exception e) {
-            Log.e("STEAM_SYNC_DEBUG", "КРИТИЧНА ПОМИЛКА в fetchAndSaveNewGame для [" + gameName + "]: " + e.getMessage(), e);
-            saveGameAsFallback(gameName, hoursPlayed, lastPlayedDate, today);
+            saveGameAsFallback(sg, hoursPlayed, lastPlayedDate, today);
         }
     }
 
-    // --- ФОЛБЕК МЕТОД: ЗБЕРІГАЄ ГРУ НАВІТЬ ЯКЩО ЇЇ НЕМАЄ НА IGDB ---
-    private void saveGameAsFallback(String gameName, Float hoursPlayed, String lastPlayedDate, String today) {
-        Log.d("STEAM_SYNC_DEBUG", "-> Фолбек старт для [" + gameName + "]");
+    private void saveGameAsFallback(SteamResponse.SteamGame sg, Float hoursPlayed, String lastPlayedDate, String today) {
+        Game checkGame = dbHelper.getGameByName(sg.name);
+        if (checkGame != null) return;
 
-        Game checkGame = dbHelper.getGameByName(gameName);
-        if (checkGame != null) {
-            Log.d("STEAM_SYNC_DEBUG", "-> Фолбек стоп: Гра вже є в БД.");
-            return;
-        }
-
+        String steamVerticalCover = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + sg.appid + "/library_600x900.jpg";
         String targetCategory = (hoursPlayed > 0) ? "completed" : "planned";
         Float finalTime = (hoursPlayed > 0) ? hoursPlayed : null;
         String finalEndDate = (hoursPlayed > 0) ? lastPlayedDate : null;
         String finalAddedDate = (hoursPlayed == 0) ? today : null;
 
         Game fallbackGame = new Game(
-                0, gameName, targetCategory, "", 0f, "",
+                0, sg.name, targetCategory, "", 0f, steamVerticalCover,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), "", "", "",
                 new ArrayList<>(), new ArrayList<>(), "", new ArrayList<>(), 0f,
-                "", "", "Main Game", "", "", "", new ArrayList<>(), "",
+                "", "", "Main Game", "", "", "", new ArrayList<>(), steamVerticalCover,
                 null, null, finalEndDate, finalAddedDate, null, null, null, "Steam Import (Fallback)", 1, finalTime
         );
 
-        long dbId = dbHelper.addGame(fallbackGame);
-        if (dbId != -1) {
-            Log.d("STEAM_SYNC_DEBUG", "-> ФОЛБЕК УСПІХ! [" + gameName + "] додана в БД без даних IGDB.");
-        } else {
-            Log.e("STEAM_SYNC_DEBUG", "-> ФОЛБЕК ПОМИЛКА! Не вдалося записати [" + gameName + "] в БД.");
-        }
+        dbHelper.addGame(fallbackGame);
     }
 
     private IgdbGame findBestMatch(List<IgdbGame> results, String targetName) {
@@ -291,7 +251,7 @@ public class SteamSyncService extends Service {
         notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Steam Syncing...")
                 .setContentText(contentText)
-                .setSmallIcon(R.drawable.ic_steam) // Обов'язково своя іконка
+                .setSmallIcon(R.drawable.ic_steam)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOnlyAlertOnce(true)
                 .setProgress(max, current, false);
@@ -306,6 +266,6 @@ public class SteamSyncService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null; // Ми не прив'язуємо цей сервіс до UI
+        return null;
     }
 }

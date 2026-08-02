@@ -9,15 +9,33 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SteamPreviewAdapter extends RecyclerView.Adapter<SteamPreviewAdapter.ViewHolder> {
-    private List<SteamResponse.SteamGame> games;
-    private List<SteamResponse.SteamGame> selectedGames;
+    private final List<SteamResponse.SteamGame> allGames;
+    private final List<SteamResponse.SteamGame> displayGames;
+    private final List<SteamResponse.SteamGame> selectedGames;
 
     public SteamPreviewAdapter(List<SteamResponse.SteamGame> games, List<SteamResponse.SteamGame> selectedGames) {
-        this.games = games;
+        this.allGames = games != null ? games : new ArrayList<>();
+        this.displayGames = new ArrayList<>(this.allGames);
         this.selectedGames = selectedGames;
+    }
+
+    public void filter(String query) {
+        displayGames.clear();
+        if (query == null || query.trim().isEmpty()) {
+            displayGames.addAll(allGames);
+        } else {
+            String lowerQuery = query.toLowerCase().trim();
+            for (SteamResponse.SteamGame game : allGames) {
+                if (game.name != null && game.name.toLowerCase().contains(lowerQuery)) {
+                    displayGames.add(game);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -29,29 +47,41 @@ public class SteamPreviewAdapter extends RecyclerView.Adapter<SteamPreviewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        SteamResponse.SteamGame game = games.get(position);
+        SteamResponse.SteamGame game = displayGames.get(position);
 
         holder.tvName.setText(game.name);
 
         float hours = game.playtime_forever / 60.0f;
         if (hours == 0) {
             holder.tvTime.setText("0h (Will go to Planned)");
-            holder.tvTime.setTextColor(android.graphics.Color.parseColor("#2D5E85")); // Синій
+            holder.tvTime.setTextColor(android.graphics.Color.parseColor("#2D5E85"));
         } else {
             holder.tvTime.setText(String.format(java.util.Locale.getDefault(), "%.1fh", hours));
-            holder.tvTime.setTextColor(android.graphics.Color.parseColor("#58A870")); // Зелений
+            holder.tvTime.setTextColor(android.graphics.Color.parseColor("#58A870"));
         }
 
-        // Завантаження іконки Steam
+        // FIX: Steam Official Vertical 2:3 Poster Art
+        String verticalCoverUrl = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + game.appid + "/library_600x900.jpg";
+
         if (game.img_icon_url != null && !game.img_icon_url.isEmpty()) {
-            String iconUrl = "http://media.steampowered.com/steamcommunity/public/images/apps/" + game.appid + "/" + game.img_icon_url + ".jpg";
-            Glide.with(holder.itemView.getContext()).load(iconUrl).centerCrop().into(holder.ivCover);
+            String iconUrl = "https://media.steampowered.com/steamcommunity/public/images/apps/" + game.appid + "/" + game.img_icon_url + ".jpg";
+
+            Glide.with(holder.itemView.getContext())
+                    .load(verticalCoverUrl)
+                    .placeholder(R.drawable.placeholder)
+                    .error(Glide.with(holder.itemView.getContext()).load(iconUrl).placeholder(R.drawable.placeholder))
+                    .centerCrop()
+                    .into(holder.ivCover);
         } else {
-            holder.ivCover.setImageResource(R.drawable.placeholder);
+            Glide.with(holder.itemView.getContext())
+                    .load(verticalCoverUrl)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
+                    .centerCrop()
+                    .into(holder.ivCover);
         }
 
-        // Логіка чекбоксу
-        holder.cbSelect.setOnCheckedChangeListener(null); // Скидаємо слухач, щоб уникнути багів при скролі
+        holder.cbSelect.setOnCheckedChangeListener(null);
         holder.cbSelect.setChecked(selectedGames.contains(game));
 
         holder.cbSelect.setOnCheckedChangeListener((btn, isChecked) -> {
@@ -66,7 +96,7 @@ public class SteamPreviewAdapter extends RecyclerView.Adapter<SteamPreviewAdapte
     }
 
     @Override
-    public int getItemCount() { return games.size(); }
+    public int getItemCount() { return displayGames.size(); }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         CheckBox cbSelect;

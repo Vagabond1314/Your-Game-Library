@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +33,7 @@ public class SteamSyncActivity extends AppCompatActivity {
     private LinearLayout llInputContainer, llPreviewContainer;
     private TextView tvPreviewGames;
     private RecyclerView rvSteamGames;
+    private SearchView svSteamGames;
 
     private SteamApiService steamApi;
     private List<SteamResponse.SteamGame> fetchedSteamGames = new ArrayList<>();
@@ -66,6 +68,7 @@ public class SteamSyncActivity extends AppCompatActivity {
         llPreviewContainer = findViewById(R.id.llPreviewContainer);
         tvPreviewGames = findViewById(R.id.tvPreviewGames);
         rvSteamGames = findViewById(R.id.rvSteamGames);
+        svSteamGames = findViewById(R.id.svSteamGames); // Search view for games
 
         rvSteamGames.setLayoutManager(new LinearLayoutManager(this));
 
@@ -84,8 +87,25 @@ public class SteamSyncActivity extends AppCompatActivity {
             if (isAllSelected) {
                 selectedGamesToSync.addAll(fetchedSteamGames);
             }
-            adapter.notifyDataSetChanged();
+            if (adapter != null) adapter.notifyDataSetChanged();
         });
+
+        // Setup search logic
+        if (svSteamGames != null) {
+            svSteamGames.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    if (adapter != null) adapter.filter(query);
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    if (adapter != null) adapter.filter(newText);
+                    return true;
+                }
+            });
+        }
 
         btnStartSync.setOnClickListener(v -> {
             if (selectedGamesToSync.isEmpty()) {
@@ -93,13 +113,11 @@ public class SteamSyncActivity extends AppCompatActivity {
                 return;
             }
 
-            // Ми серіалізуємо список вибраних ігор у JSON, щоб передати їх у Сервіс
             String gamesJson = new Gson().toJson(selectedGamesToSync);
 
             Intent serviceIntent = new Intent(this, SteamSyncService.class);
             serviceIntent.putExtra("GAMES_JSON", gamesJson);
 
-            // Запускаємо Фоновий Сервіс!
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent);
             } else {
@@ -107,7 +125,7 @@ public class SteamSyncActivity extends AppCompatActivity {
             }
 
             Toast.makeText(this, "Sync started in background! You can close the app.", Toast.LENGTH_LONG).show();
-            finish(); // Закриваємо цей екран, бо робота робиться у фоні
+            finish();
         });
     }
 
@@ -129,7 +147,6 @@ public class SteamSyncActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // За замовчуванням вибираємо всі ігри
                     selectedGamesToSync.clear();
                     selectedGamesToSync.addAll(fetchedSteamGames);
 
@@ -144,6 +161,7 @@ public class SteamSyncActivity extends AppCompatActivity {
                     Toast.makeText(SteamSyncActivity.this, "Error fetching data.", Toast.LENGTH_LONG).show();
                 }
             }
+
             @Override public void onFailure(Call<SteamResponse> call, Throwable t) {
                 btnFetchPreview.setEnabled(true);
                 btnFetchPreview.setText("FETCH LIBRARY");
