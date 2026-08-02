@@ -71,6 +71,8 @@ public class MyGameDetailsActivity extends AppCompatActivity {
     private Game game;
     private GameDatabaseHelper dbHelper;
 
+    private LinearLayout steamPriceContainer;
+    private TextView tvSteamDiscount, tvSteamOriginalPrice, tvSteamFinalPrice;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,6 +129,11 @@ public class MyGameDetailsActivity extends AppCompatActivity {
         btnOpenIgdb = findViewById(R.id.btnOpenIgdb);
         btnOpenSteam = findViewById(R.id.btnOpenSteam);
         screenshotsViewPager = findViewById(R.id.screenshotsViewPager);
+
+        steamPriceContainer = findViewById(R.id.steamPriceContainer);
+        tvSteamDiscount = findViewById(R.id.tvSteamDiscount);
+        tvSteamOriginalPrice = findViewById(R.id.tvSteamOriginalPrice);
+        tvSteamFinalPrice = findViewById(R.id.tvSteamFinalPrice);
     }
 
     @Override
@@ -172,33 +179,6 @@ public class MyGameDetailsActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-//        btnEditGame.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, AddGameActivity.class);
-//            intent.putExtra("gameId", game.getId());
-//            intent.putStringArrayListExtra("screenshots", new ArrayList<>(game.getScreenshots()));
-//            intent.putStringArrayListExtra("tags", new ArrayList<>(game.getTags()));
-//            intent.putStringArrayListExtra("genres", new ArrayList<>(game.getGenres()));
-//            startActivity(intent);
-//        });
-        // Ініціалізація кнопки копіювання
-//        View btnCopy = findViewById(R.id.btnCopyTitle);
-//        if (btnCopy != null) {
-//            btnCopy.setOnClickListener(v -> {
-//                String gameName = detailsTitle.getText().toString();
-//                if (!gameName.isEmpty()) {
-//                    // Копіювання в буфер обміну
-//                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//                    android.content.ClipData clip = android.content.ClipData.newPlainText("Game Title", gameName);
-//                    clipboard.setPrimaryClip(clip);
-//
-//                    // Візуальне підтвердження для користувача
-//                    Toast.makeText(this, "Title copied to clipboard", Toast.LENGTH_SHORT).show();
-//
-//                    // Легка вібрація (опціонально)
-//                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-//                }
-//            });
-//        }
         btnOpenIgdb.setOnClickListener(v -> {
             if (game != null) {
                 String url = "";
@@ -1224,6 +1204,100 @@ public class MyGameDetailsActivity extends AppCompatActivity {
                 btnSeriesGames.setVisibility(View.GONE);
             }
         }
+
+        String steamAppId = extractSteamAppId(game.getSteamUrl());
+        if (steamAppId != null) {
+            fetchSteamPrice(steamAppId);
+        } else {
+            steamPriceContainer.setVisibility(View.GONE);
+        }
+    }
+
+    // Метод для витягування AppID з посилання (напр. https://store.steampowered.com/app/1091500/)
+    private String extractSteamAppId(String url) {
+        if (url == null || !url.contains("steampowered.com/app/")) return null;
+        try {
+            String[] parts = url.split("/app/");
+            if (parts.length > 1) {
+                return parts[1].split("/")[0]; // Беремо те, що йде одразу після /app/
+            }
+        } catch (Exception e) {
+            Log.e("STEAM_PRICE", "Error extracting AppID", e);
+        }
+        return null;
+    }
+
+    // Метод, який робить запит до Steam Store API
+    private void fetchSteamPrice(String appId) {
+        retrofit2.Retrofit steamRetrofit = new retrofit2.Retrofit.Builder()
+                .baseUrl("https://store.steampowered.com/")
+                .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+                .build();
+
+        SteamStoreApiService api = steamRetrofit.create(SteamStoreApiService.class);
+
+        // Визначаємо регіон телефону, щоб Steam віддав ціну у правильній валюті (US, UA, DE тощо)
+        String countryCode = java.util.Locale.getDefault().getCountry().toLowerCase();
+        if (countryCode.isEmpty()) countryCode = "us"; // Фолбек на долари
+
+        api.getGamePrice(appId, countryCode).enqueue(new Callback<com.google.gson.JsonObject>() {
+            @Override
+            public void onResponse(Call<com.google.gson.JsonObject> call, Response<com.google.gson.JsonObject> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        com.google.gson.JsonObject root = response.body();
+                        com.google.gson.JsonObject gameDataNode = root.getAsJsonObject(appId);
+
+                        if (gameDataNode != null && gameDataNode.get("success").getAsBoolean()) {
+                            com.google.gson.JsonObject data = gameDataNode.getAsJsonObject("data");
+
+                            if (data.has("price_overview")) {
+                                com.google.gson.JsonObject price = data.getAsJsonObject("price_overview");
+                                int discount = price.get("discount_percent").getAsInt();
+                                String initialPrice = price.get("initial_formatted").getAsString();
+                                String finalPrice = price.get("final_formatted").getAsString();
+
+                                runOnUiThread(() -> {
+                                    steamPriceContainer.setVisibility(View.VISIBLE);
+                                    if (discount > 0) {
+                                        tvSteamDiscount.setVisibility(View.VISIBLE);
+                                        tvSteamOriginalPrice.setVisibility(View.VISIBLE);
+
+                                        tvSteamDiscount.setText("-" + discount + "%");
+                                        tvSteamOriginalPrice.setText(initialPrice);
+                                        tvSteamFinalPrice.setText(finalPrice);
+
+                                        // Робимо стару ціну закресленою
+                                        tvSteamOriginalPrice.setPaintFlags(tvSteamOriginalPrice.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                                    } else {
+                                        // Якщо знижки немає
+                                        tvSteamDiscount.setVisibility(View.GONE);
+                                        tvSteamOriginalPrice.setVisibility(View.GONE);
+                                        tvSteamFinalPrice.setText(finalPrice);
+                                    }
+                                });
+                            } else if (data.has("is_free") && data.get("is_free").getAsBoolean()) {
+                                // Якщо гра безкоштовна
+                                runOnUiThread(() -> {
+                                    steamPriceContainer.setVisibility(View.VISIBLE);
+                                    tvSteamDiscount.setVisibility(View.GONE);
+                                    tvSteamOriginalPrice.setVisibility(View.GONE);
+                                    tvSteamFinalPrice.setText("Free to Play");
+                                    tvSteamFinalPrice.setTextColor(Color.parseColor("#58A870"));
+                                });
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e("STEAM_PRICE", "JSON Parsing error", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.google.gson.JsonObject> call, Throwable t) {
+                Log.e("STEAM_PRICE", "Network error fetching price", t);
+            }
+        });
     }
     private void setupStoreButtons(String steam, String ps, String xbox, String nintendo) {
         View btnSteam = findViewById(R.id.btnOpenSteam);

@@ -125,36 +125,88 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
-                <!-- Красиві бейджі рейтингів -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <!-- Красиві бейджі рейтингів та Ціна Steam -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
+                    android:scrollbars="none"
+                    android:clipToPadding="false">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/item_background"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="6dp"
-                        android:layout_marginEnd="8dp"
-                        android:gravity="center_vertical">
-                        <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@android:drawable/btn_star_big_on" app:tint="#FFC107"/>
-                        <TextView android:id="@+id/detailsRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:textColor="#FFF" android:textStyle="bold" android:textSize="14sp" />
-                    </LinearLayout>
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center">
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/item_background"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="6dp"
-                        android:gravity="center_vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CRITICS" android:textColor="#888" android:textSize="10sp" android:textStyle="bold" android:layout_marginEnd="6dp"/>
-                        <TextView android:id="@+id/detailsAggregatedRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#2D5E85" android:textStyle="bold" android:textSize="14sp" />
+                        <!-- Юзер Рейтинг -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/item_background"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:layout_marginEnd="8dp"
+                            android:gravity="center_vertical">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@android:drawable/btn_star_big_on" app:tint="#FFC107"/>
+                            <TextView android:id="@+id/detailsRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:textColor="#FFF" android:textStyle="bold" android:textSize="14sp" />
+                        </LinearLayout>
+
+                        <!-- Рейтинг критиків -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/item_background"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:layout_marginEnd="8dp"
+                            android:gravity="center_vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CRITICS" android:textColor="#888" android:textSize="10sp" android:textStyle="bold" android:layout_marginEnd="6dp"/>
+                            <TextView android:id="@+id/detailsAggregatedRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#2D5E85" android:textStyle="bold" android:textSize="14sp" />
+                        </LinearLayout>
+
+                        <!-- НОВИЙ БЕЙДЖ ЦІНИ ЗІ STEAM -->
+                        <LinearLayout
+                            android:id="@+id/steamPriceContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/item_background"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:gravity="center_vertical"
+                            android:visibility="gone">
+
+                            <!-- Знижка у відсотках -->
+                            <TextView
+                                android:id="@+id/tvSteamDiscount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#A4D007"
+                                android:textStyle="bold"
+                                android:textSize="12sp"
+                                android:layout_marginEnd="6dp" />
+
+                            <!-- Стара ціна (буде закреслена в коді) -->
+                            <TextView
+                                android:id="@+id/tvSteamOriginalPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#888888"
+                                android:textSize="10sp"
+                                android:layout_marginEnd="6dp" />
+
+                            <!-- Фінальна ціна / Або напис Free -->
+                            <TextView
+                                android:id="@+id/tvSteamFinalPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+
                     </LinearLayout>
-                </LinearLayout>
+                </HorizontalScrollView>
 
                 <!-- Жанри -->
                 <com.google.android.material.chip.ChipGroup
