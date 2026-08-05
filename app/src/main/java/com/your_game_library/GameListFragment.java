@@ -51,10 +51,6 @@ public class GameListFragment extends Fragment {
 
     public void refreshData(String sortCriteria, String genre, String tag, String plat, String lang, boolean isSortingChanged) {
         if (dbHelper == null || adapter == null || recyclerView == null) return;
-
-        final android.os.Parcelable savedState = (recyclerView.getLayoutManager() != null && !isSortingChanged)
-                ? recyclerView.getLayoutManager().onSaveInstanceState()
-                : null;
         this.currentSortCriteria = sortCriteria;
 
         new Thread(() -> {
@@ -84,10 +80,8 @@ public class GameListFragment extends Fragment {
                 }
 
                 adapter.submitList(listToDisplay, () -> {
-                    if (isSortingChanged) {
+                    if (isSortingChanged && recyclerView != null) {
                         recyclerView.scrollToPosition(0);
-                    } else if (savedState != null && recyclerView.getLayoutManager() != null) {
-                        recyclerView.getLayoutManager().onRestoreInstanceState(savedState);
                     }
                 });
             });

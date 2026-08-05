@@ -583,19 +583,6 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.btnFilters).setVisibility(View.VISIBLE);
             findViewById(R.id.counterContainer).setVisibility(View.VISIBLE);
         }
-
-        ViewPager2 viewPager = findViewById(R.id.viewPager);
-        if (viewPager != null) {
-            for (int i = 0; i < 3; i++) {
-                Fragment f = getSupportFragmentManager().findFragmentByTag("f" + i);
-                if (f instanceof GameListFragment) {
-                    ((GameListFragment) f).refreshData(
-                            currentSortCriteria, selectedGenreFilter, selectedTagFilter,
-                            selectedPlatformFilter, selectedLanguageFilter, true
-                    );
-                }
-            }
-        }
     }
 
     private void updateGameCount() {
