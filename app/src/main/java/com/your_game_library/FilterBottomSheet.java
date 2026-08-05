@@ -134,10 +134,6 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
         if (id == R.id.chipYear) return "released";
         if (id == R.id.chipRating) return "rating";
 
-        // Store / Price Sorts
-        if (id == R.id.chipPrice) return "price";
-        if (id == R.id.chipDiscount) return "discount";
-
         // Native sorts
         if (id == R.id.chipPriority) return "priority";
         if (id == R.id.chipDateAdded) return "date_added";

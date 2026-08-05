@@ -14,7 +14,7 @@ import java.util.List;
 public class GameDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "games.db";
-    private static final int DATABASE_VERSION = 18;
+    private static final int DATABASE_VERSION = 17;
     private static GameDatabaseHelper instance;
 
     public GameDatabaseHelper(Context context) {
@@ -65,9 +65,7 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
                 "dateStartCompleted TEXT," +
                 "dateEndCompleted TEXT," +
                 "dateAddedPlanned TEXT," +
-                "dateStartedPlaying TEXT," +
-                "price REAL DEFAULT 0," +       // NEW COLUMN
-                "discount INTEGER DEFAULT 0" +   // NEW COLUMN
+                "dateStartedPlaying TEXT" +
                 ")";
         db.execSQL(CREATE_TABLE);
         db.execSQL("CREATE TABLE collections (" +
@@ -145,12 +143,6 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE games ADD COLUMN dateStartedPlaying TEXT");
 
             migrateLegacyStatsToColumns(db);
-        }
-        if (oldVersion < 18) {
-            try {
-                db.execSQL("ALTER TABLE games ADD COLUMN price REAL DEFAULT 0");
-                db.execSQL("ALTER TABLE games ADD COLUMN discount INTEGER DEFAULT 0");
-            } catch (Exception ignored) {}
         }
     }
 
