@@ -25,8 +25,8 @@ android {
         applicationId = "com.your_game_library"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.1.1"
+        versionCode = 4
+        versionName = "1.1.2"
 
         // 2. Виправлено синтаксис buildConfigField
         buildConfigField("String", "IGDB_ID", "\"${localProperties.getProperty("IGDB_CLIENT_ID")}\"")
