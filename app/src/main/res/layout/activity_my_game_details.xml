@@ -481,27 +481,112 @@
                         </androidx.cardview.widget.CardView>
                     </LinearLayout>
 
-                    <!-- 3. Playing Stats -->
+                    <!-- 3. Playing Stats (With Expandable Logbook) -->
                     <LinearLayout
                         android:id="@+id/userStatsPlayingContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
                         android:layout_marginBottom="12dp"
                         android:background="@drawable/item_background"
                         android:orientation="vertical"
                         android:padding="16dp"
                         android:visibility="gone">
-                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:letterSpacing="0.05" android:text="PLAYING STATS" android:textColor="#58A870" android:textSize="14sp" android:textStyle="bold" />
-                        <View android:layout_width="30dp" android:layout_height="2dp" android:layout_gravity="center" android:layout_marginTop="4dp" android:layout_marginBottom="12dp" android:background="#58A870" />
-                        <androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardBackgroundColor="#262626" app:cardCornerRadius="10dp" app:cardElevation="0dp">
-                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                                <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:letterSpacing="0.05"
+                            android:text="PLAYING STATS"
+                            android:textColor="#58A870"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="30dp"
+                            android:layout_height="2dp"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="#58A870" />
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:cardBackgroundColor="#262626"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <!-- Date Started -->
+                                <LinearLayout
+                                    android:id="@+id/btnEditPlayingStats"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical"
+                                    android:padding="10dp"
+                                    android:foreground="?attr/selectableItemBackground"
+                                    android:clickable="true"
+                                    android:focusable="true">
                                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DATE STARTED" android:textColor="#888" android:textSize="9sp" android:textStyle="bold" />
                                     <TextView android:id="@+id/tvUserStarted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:textSize="12sp" android:textStyle="bold" />
                                 </LinearLayout>
+
+                                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1E1E1E" />
+
+                                <!-- Expandable Logbook Header -->
+                                <LinearLayout
+                                    android:id="@+id/llPlaytimeHeader"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:padding="12dp"
+                                    android:background="?attr/selectableItemBackground"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/menu" app:tint="#58A870" />
+                                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text=" PLAYTIME LOGBOOK" android:textColor="#58A870" android:textSize="11sp" android:textStyle="bold" />
+                                    <ImageView android:id="@+id/ivPlaytimeArrow" android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_arrow_down" app:tint="#888888" />
+                                </LinearLayout>
+
+                                <!-- Logbook Content (Hidden by default) -->
+                                <LinearLayout
+                                    android:id="@+id/llPlaytimeContent"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:visibility="gone"
+                                    android:paddingBottom="12dp">
+
+                                    <!-- Тут будуть динамічно додаватись логи -->
+                                    <LinearLayout
+                                        android:id="@+id/llPlaytimeLogsList"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:paddingHorizontal="16dp" />
+
+                                    <Button
+                                        android:id="@+id/btnAddPlaytimeLog"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="36dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginTop="8dp"
+                                        android:backgroundTint="#3358A870"
+                                        android:textColor="#58A870"
+                                        android:text="+ Add Entry"
+                                        android:textSize="10sp"
+                                        android:textStyle="bold"
+                                        app:cornerRadius="18dp" />
+                                </LinearLayout>
+
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
                     </LinearLayout>

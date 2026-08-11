@@ -526,7 +526,7 @@ public class GameDetailsActivity extends AppCompatActivity {
                 nintendoLink,
                 new ArrayList<>(),
                 mainImageUrl,
-                null, null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null, null
         );
 
         game.setRawgSlug(igdb.slug);
@@ -1179,8 +1179,10 @@ public class GameDetailsActivity extends AppCompatActivity {
 
             sheet.dismiss();
 
+            List<String> playtimeLogs = null;
+
             saveGameToCategory("completed", userRatingInt, startD, endD, null, null,
-                    reviewText.isEmpty() ? null : reviewText, null, type, playsInt, timeInt);
+                    reviewText.isEmpty() ? null : reviewText, null, type, playsInt, timeInt, playtimeLogs);
         });
 
         sheet.setContentView(view);
@@ -1244,7 +1246,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             sheet.dismiss();
 
             saveGameToCategory("planned", null, null, null, today, null,
-                    null, priorityInt, null, null, null);
+                    null, priorityInt, null, null, null, null);
         });
 
         sheet.setContentView(view);
@@ -1283,7 +1285,7 @@ public class GameDetailsActivity extends AppCompatActivity {
             sheet.dismiss();
 
             saveGameToCategory("playing", null, null, null, null, startDate,
-                    null, null, null, null, null);
+                    null, null, null, null, null, null);
         });
 
         sheet.setContentView(view);
@@ -1301,7 +1303,8 @@ public class GameDetailsActivity extends AppCompatActivity {
             Integer priority,
             String type,
             Integer plays,
-            Float time
+            Float time,
+            List<String> playtimeLogs
     ) {
         if (game == null) return;
 
@@ -1353,7 +1356,8 @@ public class GameDetailsActivity extends AppCompatActivity {
                     priority,
                     type,
                     plays,
-                    time
+                    time,
+                    playtimeLogs
             );
 
             finalGame.setRawgSlug(game.getRawgSlug());

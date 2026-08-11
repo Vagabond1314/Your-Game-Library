@@ -44,6 +44,7 @@ public class Game {
     private String xboxUrl;
     private String nintendoUrl;
     private List<String> seriesGames;
+    private List<String> playtimeLogs;
 
     @Override
     public boolean equals(Object o) {
@@ -68,7 +69,7 @@ public class Game {
                 List<String> languages, List<String> similarGames, String collection, List<String> platforms,
                 float aggregatedRating, String storyline, String igdbUrl, String gameCategory, String xboxUrl, String psUrl, String nintendoUrl,
                 List<String> seriesGames, String imageUrl, Integer userRating, String dateStartCompleted, String dateEndCompleted, String dateAddedPlanned,
-                String dateStartPlaying, String review, Integer priority, String type, Integer plays, Float time) {
+                String dateStartPlaying, String review, Integer priority, String type, Integer plays, Float time, List<String> playtimeLogs) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -104,8 +105,10 @@ public class Game {
         this.type = type;
         this.plays = plays;
         this.time = time;
+        this.playtimeLogs = playtimeLogs;
     }
-
+    public List<String> getPlaytimeLogs() { return playtimeLogs != null ? playtimeLogs : new ArrayList<>(); }
+    public void setPlaytimeLogs(List<String> playtimeLogs) { this.playtimeLogs = playtimeLogs; }
     public Integer getUserRating() { return userRating; }
     public void setUserRating(int userRating) { this.userRating = userRating; }
     public String getDateStartCompleted() { return dateStartCompleted; }

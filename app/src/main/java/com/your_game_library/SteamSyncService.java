@@ -18,10 +18,12 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -72,8 +74,8 @@ public class SteamSyncService extends Service {
 
         new Thread(() -> {
             try {
-                retrofit2.Call<TokenResponse> call = igdbApi.getToken(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, "client_credentials");
-                retrofit2.Response<TokenResponse> response = call.execute();
+                Call<TokenResponse> call = igdbApi.getToken(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, "client_credentials");
+                Response<TokenResponse> response = call.execute();
 
                 if (response.isSuccessful() && response.body() != null) {
                     igdbToken = "Bearer " + response.body().access_token;
@@ -186,13 +188,15 @@ public class SteamSyncService extends Service {
                     Float finalTime = (hoursPlayed > 0) ? hoursPlayed : null;
                     String finalEndDate = (hoursPlayed > 0) ? lastPlayedDate : null;
                     String finalAddedDate = (hoursPlayed == 0) ? today : null;
+                    List<String> playtimeLogs = doubleCheckGame.getPlaytimeLogs();
 
                     Game newGame = new Game(
                             0, igdb.name, targetCategory, summary, rating, coverUrl,
                             new ArrayList<>(), genres, new ArrayList<>(), "", "", "",
                             new ArrayList<>(), new ArrayList<>(), "", platforms, rating,
                             "", "", "Main Game", "", "", "", new ArrayList<>(), coverUrl,
-                            null, null, finalEndDate, finalAddedDate, null, null, null, "Steam Import", 1, finalTime
+                            null, null, finalEndDate, finalAddedDate, null, null, null, "Steam Import", 1, finalTime,
+                            playtimeLogs
                     );
 
                     dbHelper.addGame(newGame);
@@ -216,13 +220,15 @@ public class SteamSyncService extends Service {
         Float finalTime = (hoursPlayed > 0) ? hoursPlayed : null;
         String finalEndDate = (hoursPlayed > 0) ? lastPlayedDate : null;
         String finalAddedDate = (hoursPlayed == 0) ? today : null;
+        List<String> playtimeLogs = checkGame.getPlaytimeLogs();
 
         Game fallbackGame = new Game(
                 0, sg.name, targetCategory, "", 0f, steamVerticalCover,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), "", "", "",
                 new ArrayList<>(), new ArrayList<>(), "", new ArrayList<>(), 0f,
                 "", "", "Main Game", "", "", "", new ArrayList<>(), steamVerticalCover,
-                null, null, finalEndDate, finalAddedDate, null, null, null, "Steam Import (Fallback)", 1, finalTime
+                null, null, finalEndDate, finalAddedDate, null, null, null, "Steam Import (Fallback)", 1, finalTime,
+                playtimeLogs
         );
 
         dbHelper.addGame(fallbackGame);

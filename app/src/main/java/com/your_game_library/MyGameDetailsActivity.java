@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -73,6 +74,7 @@ public class MyGameDetailsActivity extends AppCompatActivity {
 
     private LinearLayout steamPriceContainer;
     private TextView tvSteamDiscount, tvSteamOriginalPrice, tvSteamFinalPrice;
+    private boolean isPlaytimeLogbookExpanded = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -375,9 +377,15 @@ public class MyGameDetailsActivity extends AppCompatActivity {
         String cleanDescBefore = fullDesc;
 
         if (game.getDateEndCompleted() != null && !game.getDateEndCompleted().isEmpty()) {
-            Float time = game.getTime();
-            time = (float) Math.round(time * 100) / 100;
-            oldTime = game.getTime() != null ? String.valueOf(time) : "";
+
+            // SAFE FLOAT UNBOXING
+            if (game.getTime() != null) {
+                float roundedTime = (float) Math.round(game.getTime() * 100) / 100f;
+                oldTime = String.valueOf(roundedTime);
+            } else {
+                oldTime = "";
+            }
+
             oldPlays = game.getPlays() != null ? String.valueOf(game.getPlays()) : "1";
             oldStart = game.getDateStartCompleted() != null ? game.getDateStartCompleted() : "";
             oldEnd = game.getDateEndCompleted();
@@ -966,6 +974,85 @@ public class MyGameDetailsActivity extends AppCompatActivity {
             } else {
                 if (userStatsPlayingContainer != null) userStatsPlayingContainer.setVisibility(View.GONE);
             }
+            if (userStatsPlayingContainer != null && userStatsPlayingContainer.getVisibility() == View.VISIBLE) {
+                ((TextView) findViewById(R.id.tvUserStarted)).setText(uStarted);
+
+                View header = findViewById(R.id.llPlaytimeHeader);
+                View content = findViewById(R.id.llPlaytimeContent);
+                ImageView arrow = findViewById(R.id.ivPlaytimeArrow);
+                LinearLayout listContainer = findViewById(R.id.llPlaytimeLogsList);
+                Button btnAddLog = findViewById(R.id.btnAddPlaytimeLog);
+
+                content.setVisibility(isPlaytimeLogbookExpanded ? View.VISIBLE : View.GONE);
+                arrow.setRotation(isPlaytimeLogbookExpanded ? 180 : 0);
+
+                header.setOnClickListener(v -> {
+                    isPlaytimeLogbookExpanded = !isPlaytimeLogbookExpanded;
+                    content.setVisibility(isPlaytimeLogbookExpanded ? View.VISIBLE : View.GONE);
+                    arrow.animate().rotation(isPlaytimeLogbookExpanded ? 180 : 0).setDuration(200).start();
+                });
+
+                // Малюємо відсортовані логи
+                listContainer.removeAllViews();
+                List<String> logs = game.getPlaytimeLogs();
+                sortPlaytimeLogsChronologically(logs); // Переконуємось що список відсортований
+
+                if (logs.isEmpty()) {
+                    TextView empty = new TextView(this);
+                    empty.setText("No entries yet.");
+                    empty.setTextColor(Color.parseColor("#666666"));
+                    empty.setTextSize(12);
+                    empty.setGravity(android.view.Gravity.CENTER);
+                    listContainer.addView(empty);
+                } else {
+                    for (int i = 0; i < logs.size(); i++) {
+                        final int index = i;
+                        String logStr = logs.get(i);
+                        String[] parts = logStr.split("\\|");
+                        if (parts.length == 2) {
+                            LinearLayout row = new LinearLayout(this);
+                            row.setOrientation(LinearLayout.HORIZONTAL);
+                            row.setPadding(0, 12, 0, 12);
+
+                            // Додаємо клікабельність рядка
+                            android.util.TypedValue outValue = new android.util.TypedValue();
+                            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+                            row.setBackgroundResource(outValue.resourceId);
+                            row.setClickable(true);
+                            row.setFocusable(true);
+
+                            // КЛІК ПО РЯДКУ ВІДКРИВАЄ ДІАЛОГ РЕДАГУВАННЯ/ВИДАЛЕННЯ
+                            row.setOnClickListener(v -> showEditPlaytimeLogDialog(index));
+
+                            TextView tvDate = new TextView(this);
+                            tvDate.setText(parts[0]);
+                            tvDate.setTextColor(Color.LTGRAY);
+                            tvDate.setTextSize(12);
+
+                            TextView tvSpacer = new TextView(this);
+                            tvSpacer.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+                            TextView tvHours = new TextView(this);
+                            tvHours.setText(parts[1] + "h  ✎"); // Іконка олівця підказує що можна редагувати
+                            tvHours.setTextColor(Color.WHITE);
+                            tvHours.setTextSize(12);
+                            tvHours.setTypeface(null, android.graphics.Typeface.BOLD);
+
+                            row.addView(tvDate);
+                            row.addView(tvSpacer);
+                            row.addView(tvHours);
+                            listContainer.addView(row);
+
+                            View div = new View(this);
+                            div.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+                            div.setBackgroundColor(Color.parseColor("#1Affffff"));
+                            listContainer.addView(div);
+                        }
+                    }
+                }
+
+                btnAddLog.setOnClickListener(v -> showAddPlaytimeLogDialog());
+            }
 
             if (userStatsPlayingContainer != null && userStatsPlayingContainer.getVisibility() == View.VISIBLE) {
                 ((TextView) findViewById(R.id.tvUserStarted)).setText(uStarted);
@@ -986,9 +1073,15 @@ public class MyGameDetailsActivity extends AppCompatActivity {
             // Перевіряємо нові поля
             if (game.getDateEndCompleted() != null && !game.getDateEndCompleted().isEmpty()) {
                 if (userStatsContainer != null) userStatsContainer.setVisibility(View.VISIBLE);
-                Float time = game.getTime();
-                time = (float) Math.round(time * 100) / 100;
-                uTime = game.getTime() != null ? String.valueOf(time) + "h" : "-";
+
+                // SAFE FLOAT UNBOXING
+                if (game.getTime() != null) {
+                    float roundedTime = (float) Math.round(game.getTime() * 100) / 100f;
+                    uTime = roundedTime + "h";
+                } else {
+                    uTime = "-";
+                }
+
                 uPlays = game.getPlays() != null ? String.valueOf(game.getPlays()) : "-";
                 uType = game.getType() != null ? game.getType() : "-";
                 uStart = game.getDateStartCompleted() != null ? game.getDateStartCompleted() : "?";
@@ -1226,7 +1319,147 @@ public class MyGameDetailsActivity extends AppCompatActivity {
         }
         return null;
     }
+    private void showAddPlaytimeLogDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyDialogTheme);
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_playtime_log, null);
+        builder.setView(view);
 
+        com.google.android.material.textfield.TextInputEditText etDate = view.findViewById(R.id.etLogDate);
+        com.google.android.material.textfield.TextInputEditText etHours = view.findViewById(R.id.etLogHours);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        etDate.setText(sdf.format(new Date()));
+
+        etDate.setOnClickListener(v -> {
+            final java.util.Calendar c = java.util.Calendar.getInstance();
+            new android.app.DatePickerDialog(this, R.style.MyDialogTheme,
+                    (view1, y, m, d) -> etDate.setText(String.format(Locale.getDefault(), "%02d.%02d.%04d", d, m + 1, y)),
+                    c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH)).show();
+        });
+
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String date = etDate.getText().toString().trim();
+            String hoursStr = etHours.getText().toString().trim();
+
+            if (!hoursStr.isEmpty() && !date.isEmpty()) {
+                String entry = date + "|" + hoursStr;
+
+                List<String> currentLogs = game.getPlaytimeLogs();
+                currentLogs.add(entry);
+
+                // СОРТУЄМО ЛОГИ ПЕРЕД ЗБЕРЕЖЕННЯМ
+                sortPlaytimeLogsChronologically(currentLogs);
+                game.setPlaytimeLogs(currentLogs);
+
+                new Thread(() -> {
+                    dbHelper.updateGame(game);
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Log saved!", Toast.LENGTH_SHORT).show();
+                        populateDetails();
+                    });
+                }).start();
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#58A870"));
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.parseColor("#58A870"));
+    }
+    // 1. СОРТУВАННЯ ЛОГІВ ЗА ДАТОЮ (хронологічний порядок: від найстарішого до найновішого)
+    private void sortPlaytimeLogsChronologically(List<String> logs) {
+        if (logs == null || logs.isEmpty()) return;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+
+        Collections.sort(logs, (o1, o2) -> {
+            try {
+                String d1Str = o1.split("\\|")[0];
+                String d2Str = o2.split("\\|")[0];
+                Date d1 = sdf.parse(d1Str);
+                Date d2 = sdf.parse(d2Str);
+                if (d1 != null && d2 != null) {
+                    return d1.compareTo(d2); // Chronological order
+                }
+            } catch (Exception ignored) {}
+            return 0;
+        });
+    }
+
+    // 2. ДІАЛОГ РЕДАГУВАННЯ ТА ВИДАЛЕННЯ ЛОГУ
+    private void showEditPlaytimeLogDialog(int logIndex) {
+        List<String> logs = game.getPlaytimeLogs();
+        if (logIndex < 0 || logIndex >= logs.size()) return;
+
+        String logStr = logs.get(logIndex);
+        String[] parts = logStr.split("\\|");
+        if (parts.length < 2) return;
+
+        String oldDate = parts[0];
+        String oldHours = parts[1];
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyDialogTheme);
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_playtime_log, null);
+        builder.setView(view);
+
+        com.google.android.material.textfield.TextInputEditText etDate = view.findViewById(R.id.etLogDate);
+        com.google.android.material.textfield.TextInputEditText etHours = view.findViewById(R.id.etLogHours);
+
+        etDate.setText(oldDate);
+        etHours.setText(oldHours);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+
+        etDate.setOnClickListener(v -> {
+            final java.util.Calendar c = java.util.Calendar.getInstance();
+            try { c.setTime(sdf.parse(etDate.getText().toString())); } catch (Exception ignored) {}
+            new android.app.DatePickerDialog(this, R.style.MyDialogTheme,
+                    (view1, y, m, d) -> etDate.setText(String.format(Locale.getDefault(), "%02d.%02d.%04d", d, m + 1, y)),
+                    c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH)).show();
+        });
+
+        // ЗБЕРЕЖЕННЯ ЗМІН
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String newDate = etDate.getText().toString().trim();
+            String newHours = etHours.getText().toString().trim();
+
+            if (!newDate.isEmpty() && !newHours.isEmpty()) {
+                logs.set(logIndex, newDate + "|" + newHours);
+                sortPlaytimeLogsChronologically(logs);
+                game.setPlaytimeLogs(logs);
+
+                new Thread(() -> {
+                    dbHelper.updateGame(game);
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Log updated!", Toast.LENGTH_SHORT).show();
+                        populateDetails();
+                    });
+                }).start();
+            }
+        });
+
+        // ВИДАЛЕННЯ ЛОГУ
+        builder.setNeutralButton("Delete", (dialog, which) -> {
+            logs.remove(logIndex);
+            game.setPlaytimeLogs(logs);
+
+            new Thread(() -> {
+                dbHelper.updateGame(game);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Log deleted!", Toast.LENGTH_SHORT).show();
+                    populateDetails();
+                });
+            }).start();
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#58A870"));
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.parseColor("#FF4242")); // Червона кнопка видалення
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.parseColor("#888888"));
+    }
     // Метод, який робить запит до Steam Store API
     private void fetchSteamPrice(String appId) {
         retrofit2.Retrofit steamRetrofit = new retrofit2.Retrofit.Builder()

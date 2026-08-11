@@ -14,7 +14,7 @@ import java.util.List;
 public class GameDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "games.db";
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
     private static GameDatabaseHelper instance;
 
     public GameDatabaseHelper(Context context) {
@@ -65,7 +65,8 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
                 "dateStartCompleted TEXT," +
                 "dateEndCompleted TEXT," +
                 "dateAddedPlanned TEXT," +
-                "dateStartedPlaying TEXT" +
+                "dateStartedPlaying TEXT," +
+                "playtimeLogs TEXT" +
                 ")";
         db.execSQL(CREATE_TABLE);
         db.execSQL("CREATE TABLE collections (" +
@@ -143,6 +144,11 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE games ADD COLUMN dateStartedPlaying TEXT");
 
             migrateLegacyStatsToColumns(db);
+        }
+        if(oldVersion < 18) {
+            try {
+                db.execSQL("ALTER TABLE games ADD COLUMN playtimeLogs TEXT");
+            } catch (Exception ignored) {}
         }
     }
 
@@ -222,6 +228,7 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
         values.put("dateEndCompleted", game.getDateEndCompleted());
         values.put("dateAddedPlanned", game.getDateAddedPlanned());
         values.put("dateStartedPlaying", game.getDateStartPlaying());
+        values.put("playtimeLogs", String.join(",", game.getPlaytimeLogs()));
 
         long id = -1;
         try {
@@ -293,12 +300,17 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
         List<String> similarGames = stringToList(cursor.getString(cursor.getColumnIndexOrThrow("similar_games")));
         List<String> seriesGames = stringToList(cursor.getString(cursor.getColumnIndexOrThrow("series_games")));
         List<String> platforms = stringToList(cursor.getString(cursor.getColumnIndexOrThrow("platforms")));
+        List<String> playtimeLogs = new ArrayList<>();
+        int playtimeLogIdx = cursor.getColumnIndex("playtimeLogs");
+        if (playtimeLogIdx != -1 && !cursor.isNull(playtimeLogIdx)) {
+            playtimeLogs = stringToList(cursor.getString(playtimeLogIdx));
+        }
         //Log.d("PRIORITY_DEBUG", "Зчитано з БД: " + name + " | Колонка priority = " + priority);
 
         return new Game(id, name, category, description, rating, imagePath, tags, genres, screenshots,
                 released, hltb, steamUrl, languages, similarGames, collection, platforms,
                 aggregatedRating, storyline, igdbUrl, gameCategory, xboxUrl, playstationUrl, nintendoUrl,seriesGames,imageUrl,
-                userRating, dateStartCompleted, dateEndCompleted, dateAddedPlanned, dateStartedPlaying, review, priority, type, plays, time);
+                userRating, dateStartCompleted, dateEndCompleted, dateAddedPlanned, dateStartedPlaying, review, priority, type, plays, time, playtimeLogs);
     }
 
     // Оновити гру
@@ -339,6 +351,7 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
         values.put("dateEndCompleted", game.getDateEndCompleted());
         values.put("dateAddedPlanned", game.getDateAddedPlanned());
         values.put("dateStartedPlaying", game.getDateStartPlaying());
+        values.put("playtimeLogs", String.join(",", game.getPlaytimeLogs()));
 
         int rows = db.update("games", values, "id=?", new String[]{String.valueOf(game.getId())});
         db.close();

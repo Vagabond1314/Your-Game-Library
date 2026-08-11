@@ -565,7 +565,8 @@ public class AddGameActivity extends AppCompatActivity {
                 originalGame.getPriority(),
                 originalGame.getType(),
                 originalGame.getPlays(),
-                originalGame.getTime()
+                originalGame.getTime(),
+                originalGame.getPlaytimeLogs()
         );
 
         if (editingGameId == -1) {
