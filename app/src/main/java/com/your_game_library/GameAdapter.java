@@ -122,10 +122,13 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
         TextView tvGamePriority = holder.itemView.findViewById(R.id.tvGamePriority);
         View llTimeSpent = holder.itemView.findViewById(R.id.llTimeSpent);
         TextView tvGameTimeSpent = holder.itemView.findViewById(R.id.tvGameTimeSpent);
+        View llTimeSpentPl = holder.itemView.findViewById(R.id.llTimeSpentPlaying);
+        TextView tvGameTimeSpentPl = holder.itemView.findViewById(R.id.tvGameTimeSpentPlaying);
 
         // Reset visibility states
         if (llPriority != null) llPriority.setVisibility(View.GONE);
         if (llTimeSpent != null) llTimeSpent.setVisibility(View.GONE);
+        if (llTimeSpentPl != null) llTimeSpentPl.setVisibility(View.GONE);
         if (holder.gameRating != null) holder.gameRating.setVisibility(View.GONE);
 
         // --- BADGES LOGIC (Priority, Rating, Time Spent) ---
@@ -159,6 +162,15 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
                 if (holder.gameRating != null) {
                     holder.gameRating.setText("★ " + String.format(java.util.Locale.ROOT, "%.1f", game.getRating()));
                     holder.gameRating.setVisibility(View.VISIBLE);
+                }
+            }
+            String uTime = (game.getPlaytimeLogs() != null && !game.getPlaytimeLogs().isEmpty())
+                    ? game.getPlaytimeLogs().get(game.getPlaytimeLogs().size() - 1).split("\\|")[1] + "h"
+                    : "-";
+            if (game.getPlaytimeLogs() != null && !game.getPlaytimeLogs().isEmpty()) {
+                if (llTimeSpentPl != null) {
+                    llTimeSpentPl.setVisibility(View.VISIBLE);
+                    if (tvGameTimeSpentPl != null) tvGameTimeSpentPl.setText(uTime);
                 }
             }
         } else {

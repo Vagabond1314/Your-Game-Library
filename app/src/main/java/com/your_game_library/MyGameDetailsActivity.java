@@ -379,8 +379,35 @@ public class MyGameDetailsActivity extends AppCompatActivity {
         if (game.getDateEndCompleted() != null && !game.getDateEndCompleted().isEmpty()) {
 
             // SAFE FLOAT UNBOXING
-            if (game.getTime() != null) {
-                float roundedTime = (float) Math.round(game.getTime() * 100) / 100f;
+            float maxTime = 0f;
+            boolean hasTime = false;
+
+            // 1. Перевіряємо стандартне поле game.getTime()
+            if (game.getTime() != null && game.getTime() > 0) {
+                maxTime = game.getTime();
+                hasTime = true;
+            }
+
+            // 2. Перевіряємо всі логи з getPlaytimeLogs() і шукаємо найбільший
+            List<String> logs = game.getPlaytimeLogs();
+            if (logs != null && !logs.isEmpty()) {
+                for (String logStr : logs) {
+                    try {
+                        String[] parts = logStr.split("\\|");
+                        if (parts.length >= 2) {
+                            float logHours = Float.parseFloat(parts[1].trim());
+                            if (!hasTime || logHours > maxTime) {
+                                maxTime = logHours;
+                                hasTime = true;
+                            }
+                        }
+                    } catch (Exception ignored) {} // Захист від помилок формату
+                }
+            }
+
+            // 3. Записуємо найбільший знайдений час у oldTime
+            if (hasTime && maxTime > 0) {
+                float roundedTime = (float) Math.round(maxTime * 100) / 100f;
                 oldTime = String.valueOf(roundedTime);
             } else {
                 oldTime = "";
@@ -770,62 +797,6 @@ public class MyGameDetailsActivity extends AppCompatActivity {
 
         sheet.setContentView(view);
         sheet.show();
-    }
-
-    // 3. КЛАС-МАСКА ДЛЯ ДАТИ (dd.MM.yyyy)
-    private class SimpleDateWatcher implements android.text.TextWatcher {
-        private String current = "";
-        private android.widget.EditText input;
-
-        public SimpleDateWatcher(android.widget.EditText input) {
-            this.input = input;
-        }
-
-        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if (s.toString().equals(current)) return;
-
-            String clean = s.toString().replaceAll("[^\\d]", "");
-            String cleanC = current.replaceAll("[^\\d]", "");
-
-            int cl = clean.length();
-            int sel = cl;
-            for (int i = 2; i <= cl && i < 6; i += 2) {
-                sel++;
-            }
-            if (clean.equals(cleanC)) sel--;
-
-            if (clean.length() < 8) {
-                String formatted = "";
-                for (int i = 0; i < clean.length(); i++) {
-                    if (i == 2 || i == 4) formatted += ".";
-                    formatted += clean.charAt(i);
-                }
-                clean = formatted;
-            } else {
-                int day = Integer.parseInt(clean.substring(0, 2));
-                int mon = Integer.parseInt(clean.substring(2, 4));
-                int year = Integer.parseInt(clean.substring(4, 8));
-
-                mon = mon < 1 ? 1 : Math.min(mon, 12);
-                year = (year < 1900) ? 1900 : Math.min(year, 2100);
-
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(java.util.Calendar.MONTH, mon - 1);
-                cal.set(java.util.Calendar.YEAR, year);
-                day = Math.min(day, cal.getActualMaximum(java.util.Calendar.DATE));
-
-                clean = String.format(Locale.getDefault(), "%02d.%02d.%04d", day, mon, year);
-            }
-
-            current = clean;
-            input.setText(current);
-            input.setSelection(Math.min(sel, current.length()));
-        }
-
-        @Override public void afterTextChanged(android.text.Editable s) {}
     }
     private void populateDetails() {
         if (isDestroyed() || isFinishing()) return;
@@ -1305,8 +1276,6 @@ public class MyGameDetailsActivity extends AppCompatActivity {
             steamPriceContainer.setVisibility(View.GONE);
         }
     }
-
-    // Метод для витягування AppID з посилання (напр. https://store.steampowered.com/app/1091500/)
     private String extractSteamAppId(String url) {
         if (url == null || !url.contains("steampowered.com/app/")) return null;
         try {
