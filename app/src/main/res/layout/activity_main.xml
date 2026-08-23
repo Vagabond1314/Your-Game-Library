@@ -1,33 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
+    android:background="@color/bg_dark"
     android:fitsSystemWindows="true"
-    android:id="@+id/rootLayout"
-    android:orientation="vertical">
+    android:id="@+id/rootLayout">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/topBarCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        app:cardBackgroundColor="#1E1E1E"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        app:cardBackgroundColor="@color/surface_dark"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Усередині topBarConstraintLayout -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/topBarConstraintLayout"
             android:layout_width="match_parent"
             android:layout_height="72dp"
             android:paddingHorizontal="12dp">
 
-            <!-- 1. Пошук (Завжди розгорнутий) -->
+            <!-- Search -->
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchView"
                 android:layout_width="0dp"
@@ -37,14 +34,13 @@
                 app:queryBackground="@android:color/transparent"
                 app:closeIcon="@drawable/ic_close"
                 app:searchHintIcon="@null"
-                android:focusable="true"
-                android:clickable="true"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnFilters"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-            <!-- 2. Кнопка Фільтрів (Тепер компактна 48x48) -->
+
+            <!-- Filters -->
             <LinearLayout
                 android:id="@+id/btnFilters"
                 android:layout_width="48dp"
@@ -52,7 +48,6 @@
                 android:layout_marginStart="10dp"
                 android:background="@drawable/search_bg"
                 android:gravity="center"
-                android:orientation="horizontal"
                 android:clickable="true"
                 android:focusable="true"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -64,17 +59,11 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_tune"
-                    app:tint="#888888" />
-
-                <!-- Текст приховано для компактності за твоїм запитом -->
-                <TextView
-                    android:id="@+id/tvCurrentSort"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:visibility="gone" />
+                    app:tint="@color/icon_tint" />
+                <!-- tvCurrentSort has been completely removed -->
             </LinearLayout>
 
-            <!-- 3. Лічильники (без змін) -->
+            <!-- Counters -->
             <LinearLayout
                 android:id="@+id/counterContainer"
                 android:layout_width="wrap_content"
@@ -82,16 +71,15 @@
                 android:layout_marginStart="10dp"
                 android:background="@drawable/counter_bg"
                 android:gravity="center"
-                android:orientation="horizontal"
                 android:paddingHorizontal="12dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/btnFilters"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <TextView android:id="@+id/tvPlayingCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="#58A870" android:textSize="16sp" android:textStyle="bold" />
-                <TextView android:id="@+id/tvPlannedCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="8dp" android:text="0" android:textColor="#2D5E85" android:textSize="16sp" android:textStyle="bold" />
-                <TextView android:id="@+id/tvCompletedCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="#fc6f03" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:id="@+id/tvPlayingCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/default_count" android:textColor="@color/status_playing" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:id="@+id/tvPlannedCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="8dp" android:text="@string/default_count" android:textColor="@color/status_planned" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:id="@+id/tvCompletedCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/default_count" android:textColor="@color/status_completed" android:textSize="16sp" android:textStyle="bold" />
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -111,18 +99,18 @@
         android:layout_marginStart="20dp"
         android:layout_marginBottom="20dp"
         android:src="@drawable/menu"
-        app:backgroundTint="#1E1E1E"
-        app:fabSize="normal"
+        app:backgroundTint="@color/surface_dark"
         app:tint="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/bottomNavCard"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- Updated Bottom Navigation -->
     <androidx.cardview.widget.CardView
         android:id="@+id/bottomNavCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
-        app:cardBackgroundColor="#1E1E1E"
+        app:cardBackgroundColor="@color/surface_dark"
         app:cardCornerRadius="20dp"
         app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -143,10 +131,10 @@
                 android:layout_weight="1"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Playing"
+                android:text="@string/nav_playing"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                app:backgroundTint="#58A870"
+                app:backgroundTint="@color/status_playing"
                 app:cornerRadius="14dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -158,10 +146,10 @@
                 android:layout_weight="1"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Planned"
+                android:text="@string/nav_planned"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                app:backgroundTint="#2A2A2A"
+                app:backgroundTint="@color/surface_light"
                 app:cornerRadius="14dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -173,10 +161,10 @@
                 android:layout_weight="1"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Beaten"
+                android:text="@string/nav_completed"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                app:backgroundTint="#2A2A2A"
+                app:backgroundTint="@color/surface_light"
                 app:cornerRadius="14dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -189,8 +177,8 @@
         android:layout_marginBottom="20dp"
         app:srcCompat="@drawable/ic_pointer"
         android:visibility="gone"
-        app:backgroundTint="#1E1E1E"
-        app:tint="@color/white"
+        app:backgroundTint="@color/surface_dark"
+        app:tint="@android:color/white"
         app:fabSize="mini"
         app:borderWidth="0dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNavCard"

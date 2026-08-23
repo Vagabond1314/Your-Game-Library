@@ -8,5 +8,11 @@
     <color name="light_blue_200">#FF81D4FA</color>
     <color name="light_blue_600">#FF039BE5</color>
     <color name="light_blue_900">#FF01579B</color>
-
+        <color name="bg_dark">#121212</color>
+        <color name="surface_dark">#1E1E1E</color>
+        <color name="surface_light">#2A2A2A</color>
+        <color name="status_playing">#58A870</color>
+        <color name="status_planned">#2D5E85</color>
+        <color name="status_completed">#fc6f03</color>
+        <color name="icon_tint">#888888</color>
 </resources>

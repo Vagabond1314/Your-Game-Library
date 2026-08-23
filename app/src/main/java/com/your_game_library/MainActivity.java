@@ -237,8 +237,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupFilterButton() {
-        TextView tvSortLabel = findViewById(R.id.tvCurrentSort);
-        tvSortLabel.setText(getSortLabelByColumn(currentSortColumn));
 
         btnFilters.setOnClickListener(v -> {
             FilterBottomSheet sheet = new FilterBottomSheet(
@@ -260,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
                                 isAscending = ascending;
                             }
 
-                            tvSortLabel.setText(getSortLabelByColumn(currentSortColumn));
                             applyAndLoad();
                         }
 
